@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "A middleware specialized for building IR frontends",
   "main": "lib/main.js",
+  "bin": {
+    "irma": "main.js"
+  },
   "scripts": {
     "pegjs": "pegjs src/query-parser.pegjs lib/query-parser.pegjs",
     "prepublish": "coffee --compile --output lib src && npm run pegjs && npm run diagram && node mark-deps-bundled.js",

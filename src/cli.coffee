@@ -7,6 +7,8 @@ automist = require "automist"
 bulk = require "bulk-require"
 {isArray} = require "util"
 
+require "coffee-script/register"
+
 toCamelCase = (x)->
   if typeof x is "string"
     x.replace /\W+(\w)/g, (_,c)->c.toUpperCase()
