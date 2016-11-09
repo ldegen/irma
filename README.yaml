@@ -10,15 +10,29 @@ usage: |
   In addition, you can override some settings via command-line optoins.
 
 options:
+  - short: h
+    long: help
+    description: Display a short help message.
   - short: l
     long: listen
     argument: "address:port"
-    description: The address on which the server will listen. Defaults to `localhost:9999`
+    description: |
+      The address on which the server will listen. (Default: `localhost:9999`)
   - short: e
     long: es-host
     argument: "hostname:port"
-    description: The ElasticSearch node to connect to.
+    description: |
+      The ElasticSearch node to connect to. (Default: `localhost:9200`)
   - short: i
     long: es-index
     argument: "name"
-    description: The ElasticSearch index name to use.
+    description: |
+      The ElasticSearch index name to use. (Default: `app-test`)
+  - short: T
+    long: config-types
+    argument: directory
+    description: |
+      The files in the given directory will be loaded as via `require` and
+      made available as additional types in the configuration files.
+      Can be given multiple times. In case of conflicting names, the type
+      encountered *first* will be used.

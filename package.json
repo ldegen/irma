@@ -10,7 +10,7 @@
     "test": "npm run pegjs && mocha spec --recursive --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
     "test-watch": "npm run pegjs && mocha --recursive -b -w spec --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
     "test-jenkins": "npm run pegjs && JUNIT_REPORT_PATH=report.xml JUNIT_REPORT_STACK=1 mocha spec --recursive --require spec/helpers/chai.js --timeout 15000 --reporter mocha-jenkins-reporter --require coffee-script/register --compilers coffee:coffee-script/register||true",
-    "server": "coffee src/main.coffee",
+    "server": "coffee src/cli.coffee",
     "diagram": "coffee make-diagram.coffee < src/query-parser.pegjs > static/query-syntax.html"
   },
   "author": "Lukas Degener <l.degener@tarent.de>",
@@ -53,6 +53,7 @@
   },
   "bundleDependencies": [
     "JSONStream",
+    "automist",
     "bulk-require",
     "coffee-script",
     "deep-extend",
