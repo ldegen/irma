@@ -14,7 +14,7 @@
     "test-watch": "npm run pegjs && mocha --recursive -b -w spec --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
     "test-jenkins": "npm run pegjs && JUNIT_REPORT_PATH=report.xml JUNIT_REPORT_STACK=1 mocha spec --recursive --require spec/helpers/chai.js --timeout 15000 --reporter mocha-jenkins-reporter --require coffee-script/register --compilers coffee:coffee-script/register||true",
     "server": "coffee src/cli.coffee",
-    "diagram": "coffee make-diagram.coffee < src/query-parser.pegjs > static/query-syntax.html"
+    "diagram": "mkdir -p static && coffee make-diagram.coffee < src/query-parser.pegjs > static/query-syntax.html"
   },
   "author": "Lukas Degener <l.degener@tarent.de>",
   "license": "Not decided yet",
