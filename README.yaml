@@ -1,0 +1,24 @@
+synopsis:
+  irma [<option>…] [<config_file>…]
+
+usage: |
+  IRMa starts a small HTTP-server that will host a IR REST-API plus any static
+  assets you provide.
+  It is configured by giving it an arbitrary number of configuration files.
+  The settings in these files will be merged; if there are conflicting settings,
+  precedence is given to the setting encountered *first*.
+  In addition, you can override some settings via command-line optoins.
+
+options:
+  - short: l
+    long: listen
+    argument: "address:port"
+    description: The address on which the server will listen. Defaults to `localhost:9999`
+  - short: e
+    long: es-host
+    argument: "hostname:port"
+    description: The ElasticSearch node to connect to.
+  - short: i
+    long: es-index
+    argument: "name"
+    description: The ElasticSearch index name to use.

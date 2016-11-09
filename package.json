@@ -1,0 +1,72 @@
+{
+  "private": true,
+  "name": "irma",
+  "version": "0.1.0",
+  "description": "A middleware specialized for building IR frontends",
+  "main": "lib/main.js",
+  "scripts": {
+    "pegjs": "pegjs src/query-parser.pegjs lib/query-parser.pegjs",
+    "prepublish": "coffee --compile --output lib src && npm run pegjs && npm run diagram && node mark-deps-bundled.js",
+    "test": "npm run pegjs && mocha spec --recursive --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
+    "test-watch": "npm run pegjs && mocha --recursive -b -w spec --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
+    "test-jenkins": "npm run pegjs && JUNIT_REPORT_PATH=report.xml JUNIT_REPORT_STACK=1 mocha spec --recursive --require spec/helpers/chai.js --timeout 15000 --reporter mocha-jenkins-reporter --require coffee-script/register --compilers coffee:coffee-script/register||true",
+    "server": "coffee src/main.coffee",
+    "diagram": "coffee make-diagram.coffee < src/query-parser.pegjs > static/query-syntax.html"
+  },
+  "author": "Lukas Degener <l.degener@tarent.de>",
+  "license": "Not decided yet",
+  "devDependencies": {
+    "chai": "^2.2.0",
+    "chai-as-promised": "^4.3.0",
+    "coffee-script": "^1.9.0",
+    "csv-stringify": "0.0.8",
+    "frisby": "^0.8.3",
+    "grammkit": "^0.3.1",
+    "lorem-ipsum": "^1.0.1",
+    "mocha": "^2.2.1",
+    "mocha-jenkins-reporter": "^0.1.6",
+    "pegjs": "^0.9.0",
+    "rosie": "^0.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://dfg.tarent.de/anonscm/git/irma/irma.git"
+  },
+  "dependencies": {
+    "JSONStream": "^1.0.4",
+    "automist": "^0.1.0",
+    "bulk-require": "^0.2.1",
+    "coffee-script": "^1.9.2",
+    "deep-extend": "^0.4.0",
+    "deepmerge": "^0.2.7",
+    "elasticsearch": "^10.0.1",
+    "elasticsearch-streams": "0.0.9",
+    "errorhandler": "^1.3.0",
+    "express": "^4.10.6",
+    "js-yaml": "^3.2.7",
+    "minimist": "^1.1.1",
+    "morgan": "^1.5.0",
+    "promise": "^6.0.1",
+    "promise-ops": "^0.5.0",
+    "request": "^2.51.0",
+    "yargs": "^1.3.3"
+  },
+  "bundleDependencies": [
+    "JSONStream",
+    "bulk-require",
+    "coffee-script",
+    "deep-extend",
+    "deepmerge",
+    "elasticsearch",
+    "elasticsearch-streams",
+    "errorhandler",
+    "express",
+    "js-yaml",
+    "minimist",
+    "morgan",
+    "promise",
+    "promise-ops",
+    "request",
+    "yargs"
+  ]
+}
