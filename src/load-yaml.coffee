@@ -26,5 +26,6 @@ module.exports = (additionalTypes={})->
   SCHEMA = Yaml.Schema.create yamlTypes
 
 
-  (file)->Yaml.safeLoad (fs.readFileSync file), schema: SCHEMA
+  (file)-> Yaml.safeLoad (fs.readFileSync file), schema: SCHEMA
+
 

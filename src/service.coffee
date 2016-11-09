@@ -27,13 +27,18 @@ module.exports = (settings)->
 
 
   service = Express()
+  service.set 'port', settings.port
   if settings.pretty
     service.set 'json spaces', 2
-  service.use Express.static( Path.join(__dirname, '..', 'static'))
-  service.set 'port', settings.port
+
+  for mountPoint, dir of settings.static
+    console.log "mounting #{dir} at #{mountPoint}"
+    service.use mountPoint, Express.static dir
+    
+  service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
   service.use morgan('dev')
   service.use errorHandler()
-  service.get '/', (req,res)->
+  service.get '/_irma', (req,res)->
     res.json
       apiVersion: require("../package.json").version
 

@@ -32,7 +32,7 @@ Server = (settings)->
       server.timeout=timeout
     new Promise (resolve,reject)->
       server.listen settings.port, settings.host, ()->
-        opsP.waitForP( ()->probeUrl("http://#{settings.host}:#{settings.port}")).then ()->
+        opsP.waitForP( ()->probeUrl("http://#{settings.host}:#{settings.port}/_irma")).then ()->
           resolve()
         , (err)->
             reject(err)

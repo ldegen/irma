@@ -38,9 +38,15 @@ loadYaml = LoadYaml configTypes
 settings = loadYaml (path.resolve __dirname, "../default-settings.yaml")
 
 # super-impose files from the command line in reverse order
+resolveStaticPaths = (file, obj)->
+  dir = path.dirname file
+  tmp = {}
+  tmp[key] = path.resolve dir, value for key, value of (obj.static ? {})
+  obj.static = tmp
+  obj
 configFiles = argv._.slice().reverse()
 for configFile in configFiles
-  settings = merge settings,  loadYaml configFile
+  settings = merge settings,  resolveStaticPaths configFile, loadYaml configFile
 
 # process command-line overrides
 if argv.listen?
