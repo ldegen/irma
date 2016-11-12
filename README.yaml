@@ -1,7 +1,11 @@
-synopsis:
-  irma [<option>…] [<config_file>…]
+name: irma - The Information Retreival Middleware something-with-a
+section: 1
+arguments:
+  - name: CONFIG_FILE
+    optional: true
+    moreThanOnce: true
 
-usage: |
+description: |
   IRMa starts a small HTTP-server that will host a IR REST-API plus any static
   assets you provide.
   It is configured by giving it an arbitrary number of configuration files.
@@ -12,7 +16,12 @@ usage: |
 options:
   - short: h
     long: help
-    description: Display a short help message.
+    description: |
+      Display a short help message.
+  - short: m
+    long: manpage
+    description: |
+      Create a manual page.
   - short: l
     long: listen
     argument: "address:port"

@@ -3,7 +3,7 @@ path = require "path"
 merge = require "deepmerge"
 LoadYaml = require "./load-yaml"
 minimist = require "minimist"
-automist = require "automist"
+Automist = require "automist"
 bulk = require "bulk-require"
 {isArray} = require "util"
 
@@ -18,10 +18,14 @@ toCamelCase = (x)->
     o
 
 readme = LoadYaml() path.resolve __dirname, "../README.yaml"
-argv = toCamelCase minimist (process.argv.slice 2), automist readme
+automist = Automist readme
+argv = toCamelCase minimist (process.argv.slice 2), automist.options()
 if argv.help
-  process.stderr.write automist.help readme
+  process.stderr.write automist.help()
   process.exit -1
+if argv.manpage
+  process.stdout.write automist.manpage()
+  process.exit 0
 
 configTypes = {}
 if argv.configTypes?

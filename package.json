@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "JSONStream": "^1.0.4",
-    "automist": "^0.1.0",
+    "automist": "^0.2.0",
     "bulk-require": "^0.2.1",
     "coffee-script": "^1.9.2",
     "deep-extend": "^0.4.0",
