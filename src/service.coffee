@@ -5,7 +5,9 @@ module.exports = (settings)->
   Express = require "express"
   ByRelevance = require "./config-types/by-relevance"
   morgan = require "morgan"
+  proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
+  cheerio = require "cheerio"
 
   bulk = require "bulk-require"
 
@@ -35,6 +37,36 @@ module.exports = (settings)->
     console.log "mounting #{dir} at #{mountPoint}"
     service.use mountPoint, Express.static dir
     
+  for mountPoint, {host, augment} of settings.proxy
+    console.log "forwarding #{mountPoint} to #{host}"
+    opts =
+      preserveHostHdr: true
+      forwardPath: (req, res)->
+        path= req.originalUrl
+        path
+    if augment?
+      opts.intercept=(rsp, data0, req,res, callback)->
+        if rsp.headers["content-type"]?.startsWith "text/html"
+          console.log "augmenting"
+          $=cheerio.load data0.toString()
+          for src in (augment.js ? [])
+            $("body").last().append(
+              $("<script>")
+                .attr "src", src
+            )
+          for href in (augment.css ? [])
+            $("head").last().append(
+              $("<link>")
+                .attr "type", "text/css"
+                .attr "rel", "stylesheet"
+                .attr "href", href
+            )
+          data = $.html()
+        else
+          data = data0
+        callback null, data
+
+      service.use mountPoint, proxy host, opts
   service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
   service.use morgan('dev')
   service.use errorHandler()
