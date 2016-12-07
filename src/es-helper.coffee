@@ -64,23 +64,32 @@ module.exports = (settings)->
     for attr in (options?.types?[type]?.attributes ? []) when attr.highlight?
       hlFields[attr.name] = attr.highlight()
     semantic = SearchSemantic options
+    suggest = {}
+    for suggestion in (options?.types?[type]?.suggestions ? [])
+      s = suggestion.build query, type
+      suggest[suggestion.name] = s if s?
+
     body=
       query: semantic query, type
       sort:  options.sorter.sort()
       _source: p._source
+      suggest: suggest
       highlight:
         fields: hlFields
       aggs: aggs
 
-
-    #console.log "body",JSON.stringify body,null,"  "
-    client.search(
+    searchReq=
       index:index
       type: type
       size: Math.min ( options?.limit ? settings.defaultLimit ? 20), settings.hardLimit ? 250
       from:options?.offset||0
       body:body
-    ).then p
+    console.log "searchReq",require("util").inspect searchReq if settings.debug
+    client.search(searchReq)
+      .then (resp)->
+        console.log "resp", require("util").inspect resp if settings.debug
+        resp
+      .then p
 
   random: (query, options)->
 

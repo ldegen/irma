@@ -35,5 +35,14 @@ module.exports = (query,type,options)->
         if aggBody?
           result["sections"] = options.sorter.interpreteAggResult aggBody, result.total
 
+    if rsp.suggest?
+      result.suggestions = {}
+      suggestions = options?.types?[type]?.suggestions ? []
+      for suggestion in suggestions
+        input = rsp.suggest[suggestion.name]
+        console.log "sug2", suggestion.name, input
+        if input?
+          result.suggestions[suggestion.name] = if suggestion.transform? then suggestion.transform input else input
+
 
     result
