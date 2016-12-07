@@ -21,7 +21,7 @@ HTML-Inhalt modifziert werden muss. Dieser Schritt ist vergleichbar mit den
 XSLT-Override-Regeln in GEPRIS, ist aber technisch anders gelöst und -- ganz
 wichtig! -- kein Teil von `GEPRIS`.  Im gegebenen Beispiel ändert der `Proxy`
 den HTML-Inhalt und fügt Referenzen auf ein zusätzliches Javascript-Modul
-`/client.js` sowie mglw. zusätzuliche Style-Sheets ein. Dann gibt `Irma` den so
+`/client.js` sowie mglw. zusätzliche Style-Sheets ein. Dann gibt `Irma` den so
 "augmentierten" Inhalt zurück an den `Browser` (1.1.2).  Beim Aufbau der Seite
 stößt dieser auf die Referenz zu besagtem Javascript-Modul und generiert eine
 weitere Anfrage (1.2). `Irma` übergibt diesen Request intern an den
@@ -34,13 +34,13 @@ Funktionalität von GEPRIS verantwortlich.  Dies geschieht in erster Linie durch
 DOM-Scritping, d.h. dynamische Modifikation des HTML DOMs (1.2.2.1.1).
 
 Nehmen wir für das Beispiel an, der `Client` würde die Such-Ansicht von GEPRIS
-um einen neuen Reiter, der seinerseits eine neue Suchfunktionalität realisiert.
+um einen neuen Reiter erweitern, der seinerseits eine neue Suchfunktionalität realisiert.
 Er kann Suchanfragen des `Anwenders` (2) abfangen und entsprechende asynchrone
 Anfragen an `Irma`s REST `API` stellen (2.1). Völlig analog zum Vorgehen im
 Falle der GEPRIS-App werden diese Anfragen interpretiert, in geeigneter Form
-ans Backend (zZt `ElasticSearch`) weitergegeben(2.1.1). Ebenso ist die
+ans Backend (z. Zt. `ElasticSearch`) weitergegeben(2.1.1). Ebenso ist die
 Backend-spezifische interpretation der Ergebnisse (2.1.1.1 und 2.1.2) Aufgabe
-dieser API.  Zurück im `Browser` kann der `Client` die Ergebnisse verarbeiten
+dieser `API`-Komponente.  Zurück im `Browser` kann der `Client` die Ergebnisse verarbeiten
 und sichtbar machen(2.1.2.1).
 
 
