@@ -1,5 +1,5 @@
 {
-  "private": true,
+  "private": false,
   "name": "irma",
   "version": "0.3.1",
   "description": "A middleware specialized for building IR frontends",
