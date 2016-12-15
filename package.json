@@ -20,7 +20,15 @@
     "watch": "npm-watch"
   },
   "author": "Lukas Degener <l.degener@tarent.de>",
-  "license": "Not decided yet",
+  "license": "MirOS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldegen/irma"
+  },
+  "bugs": {
+    "url": "https://github.com/ldegen/irma/issues"
+  },
+  "homepage": "https://github.com/ldegen/irma#readme",
   "devDependencies": {
     "chai": "^2.2.0",
     "chai-as-promised": "^4.3.0",
@@ -33,10 +41,6 @@
     "mocha-jenkins-reporter": "^0.1.6",
     "pegjs": "^0.9.0",
     "rosie": "^0.4.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://dfg.tarent.de/anonscm/git/irma/irma.git"
   },
   "dependencies": {
     "JSONStream": "^1.0.4",
