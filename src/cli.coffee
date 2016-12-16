@@ -1,71 +1,49 @@
 fs = require "fs"
 path = require "path"
 merge = require "deepmerge"
-LoadYaml = require "./load-yaml"
 minimist = require "minimist"
 Automist = require "automist"
-bulk = require "bulk-require"
+LoadYaml = require "./load-yaml"
+ConfigLoader = require "./config-loader"
 {isArray} = require "util"
 
 require "coffee-script/register"
 
-toCamelCase = (x)->
-  if typeof x is "string"
-    x.replace /\W+(\w)/g, (_,c)->c.toUpperCase()
+module.exports = (proc = process)->
+  toCamelCase = (x)->
+    if typeof x is "string"
+      x.replace /\W+(\w)/g, (_,c)->c.toUpperCase()
+    else
+      o={}
+      o[toCamelCase key]=value for key,value of x
+      o
+
+  readme = LoadYaml() path.resolve __dirname, "../README.yaml"
+  automist = Automist readme
+  argv = toCamelCase minimist (proc.argv.slice 2), automist.options()
+  if argv.help
+    proc.stderr.write automist.help()
+    proc.exit -1
+  else if argv.manpage
+    proc.stdout.write automist.manpage()
+    proc.exit 0
+
   else
-    o={}
-    o[toCamelCase key]=value for key,value of x
-    o
+    configs = argv._
+      .slice()
+      .reverse()
+      .map ConfigLoader argv.configTypes
+    # process command-line overrides
+    if argv.listen?
+      [hostname, portString] = argv.listen.split ':'
+      portNumber = parseInt portString
+      configs.push host:hostName, port:portNumber
+    if argv.esHost?
+      [hostName:portString] = argv.esHost.split ':'
+      portNumber = parseInt portString
+      configs.push elasticSearch: host: hostName , port: portNumber
+    if argv.esIndex?
+      configs.push elasticSearch: index: esIndex
 
-readme = LoadYaml() path.resolve __dirname, "../README.yaml"
-automist = Automist readme
-argv = toCamelCase minimist (process.argv.slice 2), automist.options()
-if argv.help
-  process.stderr.write automist.help()
-  process.exit -1
-if argv.manpage
-  process.stdout.write automist.manpage()
-  process.exit 0
+  configs
 
-configTypes = {}
-if argv.configTypes?
-  dirs = argv.configTypes
-  if not isArray dirs
-    dirs = [dirs]
-  else
-    dirs = dirs.slice().reverse()
-  for dir in dirs
-    configTypes[key] = value for key,value of bulk dir, '*'
-
-loadYaml = LoadYaml configTypes
-# load factory settings
-settings = loadYaml (path.resolve __dirname, "../default-settings.yaml")
-
-# super-impose files from the command line in reverse order
-resolveStaticPaths = (file, obj)->
-  dir = path.dirname file
-  tmp = {}
-  tmp[key] = path.resolve dir, value for key, value of (obj.static ? {})
-  obj.static = tmp
-  obj
-configFiles = argv._.slice().reverse()
-for configFile in configFiles
-  settings = merge settings,  resolveStaticPaths configFile, loadYaml configFile
-
-# process command-line overrides
-if argv.listen?
-  [hostname, portString] = argv.listen.split ':'
-  portNumber = parseInt portString
-  settings.host = hostName
-  settings.port = portNumber
-if argv.esHost?
-  [hostName:portString] = argv.esHost.split ':'
-  portNumber = parseInt portString
-  settings.elasticSearch.host = hostName
-  settings.elasticSearch.port = portNumber
-if argv.esIndex?
-  settings.elasticSearch.index = argv.esIndex
-
-Server = require "./server"
-Server(settings).start().done ->
-  console.error "server listening on port #{settings.port}"

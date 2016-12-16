@@ -3,6 +3,8 @@ ESHelper = require "./es-helper"
 Service = require "./service"
 Net= require("net")
 http = require("http")
+merge = require "deepmerge"
+defaults = require("../default-settings")
 
 probeUrl = (url)->
   new Promise (resolve,reject)->
@@ -19,7 +21,8 @@ probeP = (port,down)->
       c.end()
       resolve(down?false:true)
 
-Server = (settings)->
+Server = (configs)->
+  settings = configs.reduce ((a,b)->merge a, b), defaults
   opsP = require "promise-ops"
   http = require "http"
 
@@ -33,7 +36,7 @@ Server = (settings)->
     new Promise (resolve,reject)->
       server.listen settings.port, settings.host, ()->
         opsP.waitForP( ()->probeUrl("http://#{settings.host}:#{settings.port}/_irma")).then ()->
-          resolve()
+          resolve(settings)
         , (err)->
             reject(err)
 

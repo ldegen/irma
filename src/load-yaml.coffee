@@ -7,6 +7,7 @@ coffee = require "coffee-script"
 
 module.exports = (additionalTypes={})->
   ConfigTypes = bulk (path.resolve __dirname, 'config-types'), '*'
+
   ConfigTypes[key]=value for key,value of additionalTypes
 
   yamlTypes = for key,value of ConfigTypes

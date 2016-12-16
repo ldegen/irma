@@ -3,14 +3,14 @@
   "name": "irma",
   "version": "0.3.2",
   "description": "A middleware specialized for building IR frontends",
-  "main": "lib/main.js",
+  "main": "lib/index.js",
   "bin": {
     "irma": "main.js"
   },
   "man": "man/irma.1",
   "scripts": {
     "pegjs": "pegjs src/query-parser.pegjs lib/query-parser.pegjs",
-    "manpage": "mkdir -p man && coffee src/cli.coffee -m > man/irma.1",
+    "manpage": "mkdir -p man && coffee src/main.coffee -m > man/irma.1",
     "prepublish": "coffee --compile --output lib src && npm run pegjs && npm run diagram && npm run manpage && node mark-deps-bundled.js",
     "test": "npm run pegjs && mocha spec --recursive --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
     "test-watch": "npm run pegjs && mocha --recursive -b -w spec --require spec/helpers/chai.js --require coffee-script/register --compilers coffee:coffee-script/register",
