@@ -19,4 +19,4 @@ module.exports = (configTypeDirs = [])->
 
   loadYaml = LoadYaml configTypes
   
-  (configFile)-> resolveStaticPaths loadYaml configFile
+  (configFile)-> resolveStaticPaths configFile, loadYaml configFile
