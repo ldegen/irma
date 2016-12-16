@@ -1,6 +1,6 @@
 # IRMa - The Information Retreival Middleware (something with a)
 
-![Build Status](https://api.travis-ci.org/ldegen/irma.svg?branch=master "current build status in travis")
+[![Build Status](https://api.travis-ci.org/ldegen/irma.svg?branch=master "current build status in travis")](https://travis-ci.org/ldegen/irma)
 
 IRMa starts a small HTTP-server that will do three things:
 
