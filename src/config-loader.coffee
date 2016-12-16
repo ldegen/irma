@@ -1,4 +1,5 @@
 module.exports = (configTypeDirs = [])->
+  path = require "path"
   bulk = require "bulk-require"
   {isArray} = require "util"
   LoadYaml = require "./load-yaml"
