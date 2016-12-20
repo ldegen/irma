@@ -10,13 +10,13 @@ module.exports = (additionalTypes={}, ignoreMissing=false)->
 
   ConfigTypes[key]=value for key,value of additionalTypes
 
-  yamlTypes = for key,value of ConfigTypes
-    new Yaml.Type "!"+key,
-      kind: 'mapping'
-      construct: ((Constructor)->
-        (data)->
-          new Constructor(data)
-      )(value)
+  yamlTypes = for key,Constructor of ConfigTypes
+    do (key, Constructor)->
+      new Yaml.Type "!"+key,
+        kind: 'mapping'
+        construct: (data)->new Constructor data
+        predicate: (obj)-> obj.constructor is Constructor
+        represent: (obj)-> obj.options
 
   yamlTypes.push new Yaml.Type '!coffee',
     kind: 'scalar'
@@ -24,10 +24,10 @@ module.exports = (additionalTypes={}, ignoreMissing=false)->
       coffee.eval sourceCode, sandbox:require './sandbox'
 
 
-  SCHEMA = Yaml.Schema.create yamlTypes
+  SCHEMA = Yaml.Schema.create Yaml.DEFAULT_SCHEMA, yamlTypes
 
-
-  (file)->
+  
+  loadFile = (file)->
     content = undefined
     try
       content = fs.readFileSync file
@@ -36,7 +36,12 @@ module.exports = (additionalTypes={}, ignoreMissing=false)->
         return null
       else
         throw e
+    parse content
 
-    Yaml.safeLoad content, schema: SCHEMA
+  parse = (content)-> Yaml.safeLoad content, schema: SCHEMA
+  unparse = (obj)-> Yaml.dump obj, schema: SCHEMA
 
-
+  loadFile.parse = parse
+  loadFile.unparse = unparse
+    
+  loadFile

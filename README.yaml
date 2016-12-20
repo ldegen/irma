@@ -45,3 +45,12 @@ options:
       made available as additional types in the configuration files.
       Can be given multiple times. In case of conflicting names, the type
       encountered *first* will be used.
+  - short: S
+    long: install
+    description: |
+      Wrap up the current configuration and install it as a system service.
+
+  - short: U
+    long: uninstall
+    description: |
+      Uninstall a service previously created from this configuration

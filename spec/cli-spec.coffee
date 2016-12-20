@@ -112,6 +112,10 @@ describe "The Command Line Interface", ->
           foo: foo1
           bar: bar1
           baz: baz2
+        __typePath: [
+          typeDir2
+          typeDir1
+        ]
       expect(trace).to.eql [
         ['Server', 0, outcome]
         ['Server', 0, 'start']

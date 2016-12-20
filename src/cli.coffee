@@ -27,9 +27,9 @@ module.exports = (args...)->
   generateManpage = (cfg)->
     unit(cfg).then ({stdout})->stdout.write automist.manpage()
   addDirsToTypePath = (cfg)->
-    dirs = argv.configTypes?.slice().reverse() ? []
+    dirs = argv.configTypes ? []
     dirs =  [dirs] unless isArray dirs
-    unit(cfg).typePath dirs...
+    unit(cfg).typePath dirs.slice().reverse()...
   loadConfigFilesFromCommandLine = (cfg)->
     cb = argv._
       .slice()
@@ -57,11 +57,28 @@ module.exports = (args...)->
         {host, port} = settings
         stderr.write "IRMa listening at http://#{host}:#{port}\n"
         settings
-
+  installService = (cfg)->
+    unit cfg
+      .then ({stderr}, settings)->
+        path = require "path"
+        cleanSettings = {}
+        cleanSettings[key] = value for key,value of settings when not key.startsWith '__'
+        stderr.write LoadYaml(settings.__types).unparse cleanSettings
+        s = settings.__typePath?.join path.delimiter
+        stderr.write s if s?
+        stderr.write "\n"
+        settings
+        
   if argv.help
     printHelp
   else if argv.manpage
     generateManpage
+  else if argv.install then (cfg)->
+    unit cfg
+      .bind addDirsToTypePath
+      .bind loadConfigFilesFromCommandLine
+      .bind processCommandLineOverrides
+      .bind installService
   else (cfg) -> 
     unit cfg
       .bind addDirsToTypePath
