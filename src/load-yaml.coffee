@@ -5,7 +5,7 @@ path = require "path"
 fs = require "fs"
 coffee = require "coffee-script"
 
-module.exports = (additionalTypes={})->
+module.exports = (additionalTypes={}, ignoreMissing=false)->
   ConfigTypes = bulk (path.resolve __dirname, 'config-types'), '*'
 
   ConfigTypes[key]=value for key,value of additionalTypes
@@ -27,6 +27,16 @@ module.exports = (additionalTypes={})->
   SCHEMA = Yaml.Schema.create yamlTypes
 
 
-  (file)-> Yaml.safeLoad (fs.readFileSync file), schema: SCHEMA
+  (file)->
+    content = undefined
+    try
+      content = fs.readFileSync file
+    catch e
+      if ignoreMissing and e.code == "ENOENT"
+        return null
+      else
+        throw e
+
+    Yaml.safeLoad content, schema: SCHEMA
 
 

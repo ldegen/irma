@@ -2,7 +2,7 @@ var chai = require('chai');
 var asPromised = require('chai-as-promised');
 var Writable = require("stream").Writable;
 var Readable = require("stream").Readable;
-var Promise = require("promise");
+var Promise = require("bluebird");
 
 
 chai.config.includeStack = true;
@@ -50,4 +50,20 @@ global.Sink = function(opts0) {
     });
   });
   return output;
+};
+global.tmpFileName = function(test) {
+  var buf;
+  var crypto = require("crypto");
+  if(test == null){
+    buf = crypto.randomBytes(20);
+  } else {
+    var sha1 = crypto.createHash("sha1");
+    sha1.update(new Buffer([process.pid]));
+    sha1.update(test.fullTitle());
+    buf = sha1.digest();
+  }
+  return require("path").join(
+    require("os").tmpdir(),
+    buf.toString("hex")
+  );
 };

@@ -1,7 +1,9 @@
+ConfigBuilder = require "./config-builder"
 cli = require "./cli"
-Server = require "./server"
-configs = cli()
+args = process.argv.slice 2
+env = Server: require("./server"), stderr: process.stderr, stdout: process.stdout
 
-Server configs
-  .start()
-  .done (settings)-> console.error "server listening on port #{settings?.port}"
+ConfigBuilder()
+  .bind cli args...
+  .run env 
+

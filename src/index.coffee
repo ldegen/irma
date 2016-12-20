@@ -7,6 +7,7 @@ module.exports =
   Prefix: require "./config-types/prefix"
   Simple: require "./config-types/simple"
   Attribute: require "./config-types/attribute"
-  ConfigLoader: require  "./config-loader"
+  ConfigBuilder: require  "./config-builder"
   Cli: require "./cli"
   Server: require "./server"
+  defaults: require "../default-settings"

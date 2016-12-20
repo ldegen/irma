@@ -2,14 +2,14 @@ fs = require "fs"
 path = require "path"
 merge = require "deepmerge"
 minimist = require "minimist"
-Automist = require "automist"
 LoadYaml = require "./load-yaml"
-ConfigLoader = require "./config-loader"
+Automist = require "automist"
+{unit, add, load, wrap} = ConfigBuilder = require "./config-builder"
 {isArray} = require "util"
 
 require "coffee-script/register"
+module.exports = (args...)->
 
-module.exports = (proc = process)->
   toCamelCase = (x)->
     if typeof x is "string"
       x.replace /\W+(\w)/g, (_,c)->c.toUpperCase()
@@ -20,30 +20,52 @@ module.exports = (proc = process)->
 
   readme = LoadYaml() path.resolve __dirname, "../README.yaml"
   automist = Automist readme
-  argv = toCamelCase minimist (proc.argv.slice 2), automist.options()
-  if argv.help
-    proc.stderr.write automist.help()
-    proc.exit -1
-  else if argv.manpage
-    proc.stdout.write automist.manpage()
-    proc.exit 0
+  argv = toCamelCase minimist args, automist.options()
 
-  else
-    configs = argv._
+  printHelp = (cfg)->
+    unit(cfg).then ({stderr})->stderr.write automist.help()
+  generateManpage = (cfg)->
+    unit(cfg).then ({stdout})->stdout.write automist.manpage()
+  addDirsToTypePath = (cfg)->
+    dirs = argv.configTypes?.slice().reverse() ? []
+    dirs =  [dirs] unless isArray dirs
+    unit(cfg).typePath dirs...
+  loadConfigFilesFromCommandLine = (cfg)->
+    cb = argv._
       .slice()
       .reverse()
-      .map ConfigLoader argv.configTypes
-    # process command-line overrides
-    if argv.listen?
-      [hostname, portString] = argv.listen.split ':'
-      portNumber = parseInt portString
-      configs.push host:hostName, port:portNumber
-    if argv.esHost?
-      [hostName:portString] = argv.esHost.split ':'
-      portNumber = parseInt portString
-      configs.push elasticSearch: host: hostName , port: portNumber
-    if argv.esIndex?
-      configs.push elasticSearch: index: esIndex
+      .reduce ((cb,file)->cb.load file), unit(cfg)
+  processCommandLineOverrides = (cfg)->
+    unit cfg
+      .bind if argv.listen
+          [hostName, portString] = argv.listen.split ':'
+          portNumber = parseInt portString
+          add host:hostName, port:portNumber
+      .bind if argv.esHost?
+          [hostName,portString] = argv.esHost.split ':'
+          portNumber = parseInt portString
+          add elasticSearch: host: hostName , port: portNumber
+      .bind if argv.esIndex? 
+          add elasticSearch: index: argv.esIndex 
+  startServer = (cfg)->
+    unit cfg
+      .then ({Server}, settings)->
+        Server(settings).start()
+  printInfo = (cfg)->
+    unit cfg
+      .then ({stderr}, settings)->
+        {host, port} = settings
+        stderr.write "IRMa listening at http://#{host}:#{port}\n"
+        settings
 
-  configs
-
+  if argv.help
+    printHelp
+  else if argv.manpage
+    generateManpage
+  else (cfg) -> 
+    unit cfg
+      .bind addDirsToTypePath
+      .bind loadConfigFilesFromCommandLine
+      .bind processCommandLineOverrides
+      .bind startServer
+      .bind printInfo

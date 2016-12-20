@@ -21,8 +21,7 @@ probeP = (port,down)->
       c.end()
       resolve(down?false:true)
 
-Server = (configs)->
-  settings = configs.reduce ((a,b)->merge a, b), defaults
+Server = (settings)->
   opsP = require "promise-ops"
   http = require "http"
 
