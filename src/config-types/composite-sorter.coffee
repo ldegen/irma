@@ -6,4 +6,3 @@ module.exports = class CompositeSorter
     @sorters = sorters
     
   sort: ()->
-
