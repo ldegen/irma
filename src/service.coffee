@@ -104,16 +104,22 @@ module.exports = (settings)->
       body._source
   )
 
+  parseSorters = (type, sortString="relevance,desc")->
+    criteriaStrings = sortString. split ' '
+    for s in criteriaStrings
+      [attr0,direction] = s.split ','
+      criterion = attr0 ? "relevance"
+      sorter = settings.types[type]?.sort?[criterion] ? new ByRelevance()
+      sorter = sorter.direction(direction)
+      #console.log 'criterion', criterion
+      #console.log 'direction', direction
+      #console.log 'sort', sort
+      sorter
+
+
   sort = (type,query)->
-    s = query.sort ? "relevance,desc"
-    [attr0,direction] = s.split ','
-    criterion = attr0 ? "relevance"
-    sorter = settings.types[type]?.sort?[criterion] ? new ByRelevance()
-    sorter = sorter.direction(direction)
-    #console.log 'criterion', criterion
-    #console.log 'direction', direction
-    #console.log 'sort', sort
-    sorter
+    sorters = parseSorters type, query.sort
+    if sorters.length is 1 then sorters[0] else new CompositeSorter sorters
 
   #service.disable 'etag'
   service

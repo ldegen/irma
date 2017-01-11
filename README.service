@@ -1,0 +1,66 @@
+these are random notes regarding the creation of system services
+using IRMa-
+
+Movin' to Montana soon
+Yippy-Ty-O-Ty-Ay.... 
+
+# Assumption
+configuration contains intrinsic and extrinsic parts. The 
+intrinsic parts are application-specific and usually hard-coded. The
+extrinsic are specific to the individual instance of the service. Those are "baked"
+at service creation time.
+
+# Assumption
+Using service wrappers from the node-(linux|mac|windows) family, there
+there are two principle "parameters" to service creation:
+- the javascript 'main' file to give to node as an entry point
+- a set of environment variables
+
+# Assumption
+when creating an IRMa-based application, we create a small wrapper script that
+serves as the "main" file, i.e. the entry-point for the application. It
+  1. hard-wires the intrinsic configuration
+  2. runs some kind of CLI or other logic to add extrinsic configuration on top
+  2.a. override parts of the hard-wired configuration after looking at the execution environment: Check for 
+       known environment variables that point to additional config files (i) or directories containing ConfigTypes (ii).
+  2.b. There may be cases where we want to override individual settings depending on the execution environment.
+       In contrast to a) these settings are fixed at service creation time, while in a) we only fix the location
+       of configuration files/ types. 
+  3. starts the HTTP-server
+
+# Idea
+It seems to me that IRMa should provide an API for conveniently dealing with all three steps.
+Since we assume that the same entry point should be used for the service, step 1 sort of 
+"magically" falls into place.
+Step 2 requires some trickery:
+- The execution environment of the service is usually fixed at service creation time.
+  So environement variables cannot serve as indirections during runtime.
+- ATM there is no way to pass anything but the entry point itself and environment variables.
+This means, everything done in Step 2 must be "encodable" in environment variables.
+
+
+
+# phases
+There is
+
+- build-time
+- service creation time
+- load time
+
+config files and types are read at load time.
+Environment variables are "frozen" during service creation.
+# Idea
+
+We need an abstraction that fits more "tightly".
+Configuration is constructed from a stream of commands.
+Each command is an instance of one of the following directives:
+- configFile (envVars...)->filename, required
+- set (envVars...)->overrides
+- typeDir (envVars...)->directory
+
+the callbacks always return serializable data (think JSON.stringify)
+i.e. no functions or custom types. Thus, complex configuration involving
+custom types or callbacks must be put in config files.
+The idea here is to make it possible to encode the "meta-configuration"
+as a relatively simple string that could be stored in an environment variable.
+

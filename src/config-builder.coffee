@@ -1,10 +1,12 @@
 Promise = require "bluebird"
+functionArguments = require "function-arguments"
 merge = require "deepmerge"
 compose = (funs...)-> funs.reduceRight (a,b)->(x...)-> b a x...
 defaults = require("../default-settings.json")
 path = require "path"
 bulk = require "bulk-require"
 {isArray} = require "util"
+sigmatch = require "sigmatch"
 LoadYaml = require "./load-yaml"
 loadConfigTypes = (dirs)->
   dirs
@@ -36,7 +38,7 @@ resolve = ({file, required, content, configTypes={}})->
   else
     content
 
-mergeConfigs = (a={},b={})->
+mergeTwoConfigs = (a={},b={})->
   filesA = a.__files ? if a.__filename? then [a.__filename] else []
   filesB = b.__files ? if b.__filename? then [b.__filename] else []
   files = filesA.concat filesB
@@ -45,15 +47,39 @@ mergeConfigs = (a={},b={})->
   delete c.__dirname
   c.__files = files if files.length > 0
   c
+
+mergeConfigs = (configs...)->
+  configs.reduce mergeTwoConfigs
+
 identity = (x)->Promise.resolve x
+
+load_ = ({required=true, envVars=[], constructFileName})->
+  (cfg)->
+    env = envVars.map (name)->cfg.__env?[name]
+    file = path.resolve constructFileName env...
+    newContent = resolveStaticPaths resolve(file:file, required:required, configTypes: cfg.__types, content:null)
+    if envVars.length >0
+      unit mergeConfigs cfg, newContent, __usedEnvVars:envVars
+    else
+      unit mergeConfigs cfg, newContent
+
+load = (opts)->sigmatch (match)-> 
+  match "s", (file)-> 
+    load_ merge opts, constructFileName: (->file)
+  match "a,f", (deps, file)-> 
+    load_ merge opts, constructFileName: file, envVars: deps
+  match "f", (fun)->
+    deps = functionArguments fun
+    load_ merge opts, constructFileName: fun, envVars: deps
+  match ".*", -> throw new Error "unsupported call signature"
+
 arrows =
   unit: (cfg)-> wrap cfg, identity
   typePath: (dirs0...)->(cfg)->
     dirs = dirs0.map (d)->path.resolve d
     unit if dirs.length > 0 then merge cfg, __types: loadConfigTypes( dirs), __typePath:dirs else cfg
-  load: (file, required=true)->(cfg) -> 
-    unit mergeConfigs cfg, resolveStaticPaths resolve file:path.resolve(file), required:required, configTypes: cfg.__types, content:null
-  tryLoad: (file)->arrows.load file, false
+  load: load required:true
+  tryLoad: load required: false
   add: (obj, file) -> (cfg) -> unit mergeConfigs cfg, resolveStaticPaths resolve file:(if file then path.resolve file), content:obj
   then: (f)->if not f? then unit else ((cfg)->wrap cfg, f)
 unit = arrows.unit
