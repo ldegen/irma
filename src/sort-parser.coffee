@@ -1,6 +1,6 @@
 module.exports = (sorters)->
   CompositeSorter = require "./config-types/composite-sorter"
-  ByRelevance = require "../src/config-types/by-relevance"
+  ByRelevance = require "./config-types/by-relevance"
   (s="")->
     return new ByRelevance if s.trim() is ""
     tokens = s.split ","
