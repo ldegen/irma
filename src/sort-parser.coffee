@@ -15,6 +15,6 @@ module.exports = (sorters)->
     usedSorters = tokens
       .reduce reducer, []
       .filter (x)->x?
-    if usedSorters.length == 1 then usedSorters[0] else new CompositeSorter usedSorters
+    if usedSorters.length == 1 then usedSorters[0] else new CompositeSorter sorters:usedSorters
          
 

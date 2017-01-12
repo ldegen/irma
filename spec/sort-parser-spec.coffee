@@ -20,14 +20,14 @@ describe "A parser for sort expressions", ->
   it "generalizes the old syntax to allow multiple criteria with different directions", ->
     r = parse("year,desc,name,rank,asc")
     expect(r).to.be.an.instanceOf CompositeSorter
-    expect(r.sorters.map(trace)).to.eql [
+    expect(r._sorters.map(trace)).to.eql [
       ["year", "desc"]
       ["name"]
       ["rank", "asc"]
     ]
 
   it "supports new, more compact syntax", ->
-    expect(parse("~year,name,^rank").sorters.map(trace)).to.eql [
+    expect(parse("~year,name,^rank")._sorters.map(trace)).to.eql [
       ["year", "desc"]
       ["name"]
       ["rank", "asc"]
@@ -39,7 +39,7 @@ describe "A parser for sort expressions", ->
   it "silently ignores references to non-existing sorters", ->
     r = parse("yarr,desc,name,^honk,rank,asc")
     expect(r).to.be.an.instanceOf CompositeSorter
-    expect(r.sorters.map(trace)).to.eql [
+    expect(r._sorters.map(trace)).to.eql [
       ["name"]
       ["rank", "asc"]
     ]

@@ -35,7 +35,7 @@ module.exports = class ByField
         
 
   direction: (string)-> 
-    new ByField @options, string
+    if string? then new ByField @options, string else @directionString
   sort: ()->
     direction = @directionString
     fields = @options.fields?.slice(0) ? []

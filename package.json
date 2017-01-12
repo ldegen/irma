@@ -81,11 +81,13 @@
     "errorhandler",
     "express",
     "express-http-proxy",
+    "function-arguments",
     "js-yaml",
     "minimist",
     "morgan",
     "promise-ops",
     "request",
+    "sigmatch",
     "yargs"
   ]
 }

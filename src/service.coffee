@@ -3,7 +3,7 @@ module.exports = (settings)->
   Path = require "path"
   ESHelper = require "./es-helper"
   Express = require "express"
-  ByRelevance = require "./config-types/by-relevance"
+  SortParser = require "./sort-parser"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
@@ -85,7 +85,7 @@ module.exports = (settings)->
     
     options.types = settings.types
 
-
+    console.log "options", options
     es.search req.query, options
   )
 
@@ -104,22 +104,10 @@ module.exports = (settings)->
       body._source
   )
 
-  parseSorters = (type, sortString="relevance,desc")->
-    criteriaStrings = sortString. split ' '
-    for s in criteriaStrings
-      [attr0,direction] = s.split ','
-      criterion = attr0 ? "relevance"
-      sorter = settings.types[type]?.sort?[criterion] ? new ByRelevance()
-      sorter = sorter.direction(direction)
-      #console.log 'criterion', criterion
-      #console.log 'direction', direction
-      #console.log 'sort', sort
-      sorter
-
 
   sort = (type,query)->
-    sorters = parseSorters type, query.sort
-    if sorters.length is 1 then sorters[0] else new CompositeSorter sorters
+    parse = SortParser settings.types?[type]?.sort ? {}
+    parse query.sort
 
   #service.disable 'etag'
   service
