@@ -85,7 +85,7 @@ module.exports = (settings)->
     
     options.types = settings.types
 
-    console.log "options", options
+    #console.log "options", options
     es.search req.query, options
   )
 

@@ -84,10 +84,10 @@ module.exports = (settings)->
       size: Math.min ( options?.limit ? settings.defaultLimit ? 20), settings.hardLimit ? 250
       from:options?.offset||0
       body:body
-    console.log "searchReq",require("util").inspect searchReq if settings.debug
+    console.log "searchReq",require("util").inspect searchReq,false, null if settings.debug
     client.search(searchReq)
       .then (resp)->
-        console.log "resp", require("util").inspect resp if settings.debug
+        console.log "resp", require("util").inspect resp,false,null if settings.debug
         resp
       .then p
 
