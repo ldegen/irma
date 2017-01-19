@@ -8,9 +8,15 @@ to the client.
 
 ``` yaml
 
-types: project: views: export: !my_custom_view ``` A view is an object with
-functions `init`, map`, `reduce`, `empty`, `encode`.  A default implementations
-mitht look something like this:
+types: 
+  project: 
+    views: 
+      export: !my_custom_view 
+
+``` 
+
+A view is an object with functions `init`, `map`, `reduce`, `empty`, `encode`.
+A default implementations might look something like this:
 
 ``` coffee
 view = ()->
