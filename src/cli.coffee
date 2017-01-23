@@ -34,7 +34,7 @@ module.exports = (args...)->
     cb = argv._
       .slice()
       .reverse()
-      .reduce ((cb,file)->cb.load file), unit(cfg)
+      .reduce ((cb,file)-> cb.load file), unit(cfg)
   processCommandLineOverrides = (cfg)->
     unit cfg
       .bind if argv.listen

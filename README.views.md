@@ -1,4 +1,5 @@
 ## DISCLAIMER
+
 This document describes a feature that is currently still in early development/planning.
 
 ## Views
@@ -6,19 +7,17 @@ This document describes a feature that is currently still in early development/p
 A type can define custom views for transforming result sets before it is passed
 to the client.
 
-``` yaml
-
+```yaml
 types: 
   project: 
     views: 
       export: !my_custom_view 
-
-``` 
+```
 
 A view is an object with functions `init`, `map`, `reduce`, `empty`, `encode`.
 A default implementations might look something like this:
 
-``` coffee
+```coffee
 view = ()->
   init: (type)->
   map: (hit)->hit
@@ -30,7 +29,7 @@ view = ()->
 Those functions are working together to create a responseBody from result set.
 They are called like this:
 
-``` coffee
+```coffee
 result = hits
   .map view.map
   .reduce view.reduce, view.empty()
@@ -44,8 +43,8 @@ implicitly defined for all types but you can override it with your own
 implementation.
 
 While there is nothing stopping you from creating your own views, there are two
-powerful predefined views that you should know about: The *Default View* and
-the *Table View*.
+powerful predefined views that you should know about: The _Default View_ and
+the _Table View_.
 
 ## The Default View (`!default-view`)
 
@@ -67,8 +66,7 @@ There are several ways to customize this behaviour.
 
 You can specify which columns should be displayed and in which order:
 
-``` yaml
-
+```yaml
 types:
   project:
     views:
@@ -87,8 +85,7 @@ thus allowing the short-hand syntax used above. But of course you can create
 your own custom renderer and even create columns that do not correspond to any
 of the attributes.
 
-``` yaml
-
+```yaml
 types:
   project:
     views:
@@ -113,8 +110,7 @@ using the attribute name as key. As above, if the value is an instance of
 construct a `AttributeColumnRenderer`.  In the latter case, if you do not
 provide a property `key`, the attribute name will be used.
 
-``` yaml
-
+```yaml
 types:
   project:
     views:

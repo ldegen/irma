@@ -3,6 +3,7 @@ module.exports = (settings)->
   Path = require "path"
   ESHelper = require "./es-helper"
   Express = require "express"
+  ResultProjection = require "./result-projection"
   SortParser = require "./sort-parser"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
@@ -10,8 +11,9 @@ module.exports = (settings)->
   cheerio = require "cheerio"
 
   bulk = require "bulk-require"
+  projection = ResultProjection settings
 
-  es = ESHelper(settings.elasticSearch)
+  es = ESHelper(settings)
   jsonP = (f)->
     (req,res)->
       success = (obj)->
@@ -78,38 +80,28 @@ module.exports = (settings)->
 
   service.get '/:type/search', jsonP ( (req)->
     options =
-      offset: req.query.offset
-      limit:req.query.limit
-      sorter:sort(req.params.type,req.query)
-      type:req.params.type
-    
-    options.types = settings.types
+      query: req.query
+      type: req.params.type
 
-    #console.log "options", options
-    es.search req.query, options
+    es.search options
+      .then projection options
   )
 
 
 
   service.get '/:type/random', jsonP (req)->
     options =
-      attributes: settings.types[req.params.type].attributes
       seed: req.query.seed ? Math.random()
+      query: req.query
       type: req.params.type
 
-    es.random req.query, options
+    es.random options
 
   service.get '/:type/:id' , jsonP( (req)->
     es.fetch(req.params.id,req.params.type).then (body)->
       body._source
   )
 
-
-  sort = (type,query)->
-    parse = SortParser settings.types?[type]?.sort ? {}
-    parse query.sort
-
-  #service.disable 'etag'
   service
 
 

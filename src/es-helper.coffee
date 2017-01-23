@@ -1,22 +1,20 @@
 module.exports = (settings)->
   ElasticSearch = require "elasticsearch"
   SearchSemantic = require "./search-semantic"
+  RequestParser = require "./request-parser"
   Yaml = require "js-yaml"
   fs = require "fs"
   path = require "path"
   Promise = require "promise"
 
   loadYaml = (rel)-> (Yaml.safeLoad (fs.readFileSync (path.join __dirname, rel)))
-
-
-
-  projection =  require "./result-projection"
-
+  {host, port, keepAlive, index,defaultType,debug} = settings.elasticSearch
   client = new ElasticSearch.Client
-    host: "#{settings.host}:#{settings.port}"
-    keepAlive: settings.keepAlive
+    host: "#{host}:#{port}"
+    keepAlive: keepAlive
 
-  index = settings.index
+  parse = RequestParser settings
+  index = index
 
   reset: (mappings)->
     client.indices.delete
@@ -48,60 +46,36 @@ module.exports = (settings)->
   fetch: (id, type)->
     client.get
       index:index
-      type:type ? settings.defaultType
+      type:type ? defaultType
       id:id
-  search: (query,options)->
-    type = options.type ? settings.defaultType
-    p = projection(query,type,options)
-    aggs={}
-    for attr in (options.types[type]?.attributes ? []) when attr.aggregation?
-      aggs[attr.name] = attr.aggregation()
-
-    if options?.sorter?.aggregation?
-      aggs["_offsets"] = options.sorter.aggregation()
-
-    hlFields = {}
-    for attr in (options?.types?[type]?.attributes ? []) when attr.highlight?
-      hlFields[attr.name] = attr.highlight()
-    semantic = SearchSemantic options
-    suggest = {}
-    for suggestion in (options?.types?[type]?.suggestions ? [])
-      s = suggestion.build query, type
-      suggest[suggestion.name] = s if s?
-
-    body=
-      query: semantic query, type
-      sort:  options.sorter.sort()
-      _source: p._source
-      suggest: suggest
-      highlight:
-        fields: hlFields
-      aggs: aggs
-
+  search: (options)->
+    {type,size,from,query,sort,suggest,highlight,aggs} = parse options
     searchReq=
       index:index
       type: type
-      size: Math.min ( options?.limit ? settings.defaultLimit ? 20), settings.hardLimit ? 250
-      from:options?.offset||0
-      body:body
-    console.log "searchReq",require("util").inspect searchReq,false, null if settings.debug
+      size: size 
+      from: from
+      body:
+        query: query
+        sort: sort
+        suggest: suggest
+        highlight: highlight
+        aggs: aggs
+    console.log "searchReq",require("util").inspect searchReq,false, null if debug
     client.search(searchReq)
       .then (resp)->
-        console.log "resp", require("util").inspect resp,false,null if settings.debug
+        console.log "resp", require("util").inspect resp,false,null if debug
         resp
-      .then p
 
-  random: (query, options)->
-
-    type = options.type ? settings.defaultType
+  random: (options)->
 
     client.search(
       index:index
-      type: type
+      type: parser.type options 
       size: 1
       from: 0
       body: query: function_score:
-        query: SearchSemantic(query,options)
+        query: parser.query options 
         functions:[
           random_score: {}#seed: Date.now()
         ]

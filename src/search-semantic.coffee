@@ -1,16 +1,15 @@
-module.exports = (options, parser = require("./query-parser"), Query = require('./multi-match-query'))-> 
+module.exports = (settings, parser = require("./query-parser"), Query = require('./multi-match-query'))-> 
   
-  (queryString,type)->
-    #console.log "options",options
+  ({query,type})->
     #console.log "query",query
-    attrs = options?.types[type]?.attributes ? []
+    attrs = settings?.types[type]?.attributes ? []
     filters = []
     queryFields = {}
     for attr in attrs when attr.query
       queryFields[attr.field] = attr.boost ? 1
 
     for attr in attrs  when attr.filter?
-      value = queryString[attr?.name]
+      value = query[attr?.name]
       if(value?)
         filters.push attr.filter(value)
 
@@ -18,8 +17,8 @@ module.exports = (options, parser = require("./query-parser"), Query = require('
       bool:
         filter: filters
 
-    if queryString?.q? and queryString?.q?.trim() != ""
-      ast = parser.parse queryString.q
+    if query?.q? and query?.q?.trim() != ""
+      ast = parser.parse query.q
       querySemantic = Query
         fields:queryFields
       r.bool.must = querySemantic ast

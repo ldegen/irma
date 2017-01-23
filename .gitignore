@@ -8,3 +8,5 @@ static/query-syntax.html
 *.1
 *.pdf
 mpxerr.*
+TAGS
+tags

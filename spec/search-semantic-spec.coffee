@@ -1,7 +1,7 @@
 describe "The Search Semantic", ->
   SearchSemantic = require "../src/search-semantic"
 
-  options =
+  settings =
     types:project:attributes: [
       name: 'fachgebiet'
       filter: (v)-> f1:v
@@ -23,10 +23,10 @@ describe "The Search Semantic", ->
       testQuery:
         opts: opts
         ast: ast
-  semantic = SearchSemantic options, parser, Query
+  semantic = SearchSemantic settings, parser, Query
 
   it "builds a query using the given parser, query semantics and the fields of all attributes that contribute to the full-text search", ->
-    expect(semantic({q:"bienen"},'project',options)).to.eql
+    expect(semantic query:{q:"bienen"},type:'project').to.eql
       bool:
         must:
           testQuery:
@@ -38,23 +38,23 @@ describe "The Search Semantic", ->
         filter: []
 
   it "ommits the query part if given an empty query string", ->
-    expect(semantic({q:""},'project')).to.eql
+    expect(semantic(query:{q:""}, type:'project')).to.eql
       bool:
         filter: []
 
   it "ommits the query part if given a query string containing only whitespace", ->
-    expect(semantic({q:"   "},'project')).to.eql
+    expect(semantic(query:{q:"   "},type:'project')).to.eql
       bool:
         filter: []
 
   it "ommits the query part if given something falsy instead of a query string", ->
-    expect(semantic({},'project')).to.eql
+    expect(semantic(query:{},type:'project')).to.eql
       bool:
         filter: []
 
 
   it "supports filtering by attributes for attributes providing a filter expression", ->
-    query=semantic {q:"bienen", fachgebiet: "42,43"},'project', options
+    query=semantic query:{q:"bienen", fachgebiet: "42,43"},type:'project'
     expect(query.bool.filter).to.eql [
       f1:"42,43"
     ]
