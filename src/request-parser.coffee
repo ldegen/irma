@@ -19,9 +19,9 @@ module.exports = (settings)->
         suggest[suggestion.name] = s if s?
       suggest
 
-    sort: ({query:{sort}, type})->
+    sorter: ({query:{sort}, type})->
       parse = SortParser settings.types?[type]?.sort ? {}
-      parse(sort).sort()
+      parse(sort)
 
     aggs: ({type=settings.defaultType})->
       aggs={}

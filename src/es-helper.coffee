@@ -13,7 +13,6 @@ module.exports = (settings)->
     host: "#{host}:#{port}"
     keepAlive: keepAlive
 
-  parse = RequestParser settings
   index = index
 
   reset: (mappings)->
@@ -48,8 +47,7 @@ module.exports = (settings)->
       index:index
       type:type ? defaultType
       id:id
-  search: (options)->
-    {type,size,from,query,sort,suggest,highlight,aggs} = parse options
+  search: ({type,size,from,query,sorter,suggest,highlight,aggs})->
     searchReq=
       index:index
       type: type
@@ -57,7 +55,7 @@ module.exports = (settings)->
       from: from
       body:
         query: query
-        sort: sort
+        sort: sorter.sort()
         suggest: suggest
         highlight: highlight
         aggs: aggs

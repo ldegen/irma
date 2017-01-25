@@ -1,19 +1,36 @@
 module.exports = (settings)->
-  Promise = require "promise"
+  Promise = require "bluebird"
   Path = require "path"
   ESHelper = require "./es-helper"
   Express = require "express"
-  ResultProjection = require "./result-projection"
-  SortParser = require "./sort-parser"
+  RequestParser = require "./request-parser"
+  ResponseParser = require "./response-parser"
+  DefaultView = require "./default-view"
+  CsvView = require "./csv-view"
+  toCsv = Promise.promisify require "csv-stringify"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
   cheerio = require "cheerio"
 
   bulk = require "bulk-require"
-  projection = ResultProjection settings
 
+  parseRequest = RequestParser settings
+  parseResponseBody = ResponseParser settings
+  defaultView = DefaultView settings
+  csvView = CsvView settings
   es = ESHelper(settings)
+  P = (handler)->(req,res)->
+    Promise
+      .resolve handler req
+      .then (data)->res.send data
+      .catch (err)->
+        console.error "error",err.stack||err
+        res
+          .status(err.status)
+          .send(err)
+
+
   jsonP = (f)->
     (req,res)->
       success = (obj)->
@@ -28,7 +45,7 @@ module.exports = (settings)->
         console.error "error",err.stack||err
         res.status(500).send err
 
-
+  
 
   service = Express()
   service.set 'port', settings.port
@@ -78,14 +95,31 @@ module.exports = (settings)->
 
 
 
-  service.get '/:type/search', jsonP ( (req)->
+  service.get '/:type/search', (req, res)->
     options =
       query: req.query
       type: req.params.type
 
-    es.search options
-      .then projection options
-  )
+    view = if req.query.view == "csv" then csvView else defaultView
+    es.search parseRequest options
+      .then parseResponseBody options
+      .then view options
+      .then ({data, mimeType})->
+        if mimeType?
+          res.set 'Content-Type', mimeType 
+          if mimeType == "text/csv"  
+            toCsv data 
+          else 
+            data
+        else data
+      .then (data)->
+        res.send data
+      .catch (err)->
+        res
+          .status(err.status)
+          .send(err)
+
+  
 
 
 

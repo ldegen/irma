@@ -17,7 +17,7 @@ xdescribe "a fulltext attribute", ->
     
   mockHit = (doc)->
     _index: doc.index ? "my_index"
-    _type: doc.type ? ",y_type"
+    _type: doc.type ? "my_type"
     _id: ""+doc.id ? "42"
     _score: 0.0
     _source: doc

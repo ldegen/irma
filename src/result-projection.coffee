@@ -32,7 +32,7 @@ module.exports = (settings)->
           aggBody = rsp.aggregations[attr.name]
           if aggBody?
             result.facetCounts[attr.name] = attr.interpreteAggResult aggBody, result.total
-        sorter = parse.sort options
+        sorter = parse.sorter options
         if sorter?.interpreteAggResult?
           aggBody = rsp.aggregations._offsets
           if aggBody?
