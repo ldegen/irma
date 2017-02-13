@@ -85,7 +85,7 @@ module.exports = (settings)->
           data = data0
         callback null, data
 
-      service.use mountPoint, proxy host, opts
+    service.use mountPoint, proxy host, opts
   service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
   service.use morgan('dev')
   service.use errorHandler()
