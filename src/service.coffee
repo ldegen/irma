@@ -56,13 +56,14 @@ module.exports = (settings)->
     console.log "mounting #{dir} at #{mountPoint}"
     service.use mountPoint, Express.static dir
     
-  for mountPoint, {host, augment} of settings.proxy
+  for mountPoint, {host, augment, https, preserveHostHdr} of settings.proxy
     console.log "forwarding #{mountPoint} to #{host}"
     opts =
-      preserveHostHdr: true
       forwardPath: (req, res)->
         path= req.originalUrl
         path
+    opts.https=https if https?
+    opts.preserveHostHdr = preserveHostHdr if preserveHostHdr?
     if augment?
       opts.intercept=(rsp, data0, req,res, callback)->
         if rsp.headers["content-type"]?.startsWith "text/html"
