@@ -1,4 +1,4 @@
-Promise = require "promise"
+Promise = require "bluebird"
 ESHelper = require "./es-helper"
 Service = require "./service"
 Net= require("net")

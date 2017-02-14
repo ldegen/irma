@@ -5,7 +5,7 @@ module.exports = (settings)->
   Yaml = require "js-yaml"
   fs = require "fs"
   path = require "path"
-  Promise = require "promise"
+  Promise = require "bluebird"
 
   loadYaml = (rel)-> (Yaml.safeLoad (fs.readFileSync (path.join __dirname, rel)))
   {host, port, keepAlive, index,defaultType,debug} = settings.elasticSearch
