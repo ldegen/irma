@@ -14,7 +14,7 @@ module.exports = (settings)->
   cheerio = require "cheerio"
 
   bulk = require "bulk-require"
-
+  parseQuery = require("./query-parser").parse
   parseRequest = RequestParser settings
   parseResponseBody = ResponseParser settings
   defaultView = DefaultView settings
@@ -93,6 +93,22 @@ module.exports = (settings)->
   service.get '/_irma', (req,res)->
     res.json
       apiVersion: require("../package.json").version
+  service.get '/:type/_sandbox', (req, res)->
+    
+    options =
+      query: req.query
+      type: req.params.type
+
+    view = if req.query.view == "csv" then csvView else defaultView
+    Promise.resolve parseRequest options
+      .then (request)->
+        res.send 
+          #query:request.query
+          ast: parseQuery req.query.q ? ""
+      .catch (err)->
+        res
+          .status(err.status)
+          .send(err)
 
 
 
