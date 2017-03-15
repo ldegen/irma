@@ -5,6 +5,8 @@ module.exports = ({types})->
     {attributes=[]}=(types?[type] ? {})
     headers = attributes.map ({name})->name
     ({hits})->
+      headers:
+        "Content-Disposition": "attachment; filename=\"export.csv\""
       mimeType: "text/csv"
       data: [headers].concat hits.map (hit)->
         attributes.map (attr)->

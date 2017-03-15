@@ -121,7 +121,8 @@ module.exports = (settings)->
     es.search parseRequest options
       .then parseResponseBody options
       .then view options
-      .then ({data, mimeType})->
+      .then ({data, mimeType, headers={}})->
+        res.set header, value for header,value of headers
         if mimeType?
           res.set 'Content-Type', mimeType 
           if mimeType == "text/csv"  
