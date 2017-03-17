@@ -10,7 +10,7 @@ module.exports= class Simple extends Attribute
       size:@options.buckets ? 0
   filter: (paramString)->
     parse = switch @options?.type
-      when "integer" then (s) ->parseInt s
+      when "integer","date" then (s) ->parseInt s
       when "float" then (s) -> parseFloat s
       when "boolean" then (s) -> s?.toLowerCase().trim() == "true"
       else (s) -> s
