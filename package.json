@@ -33,6 +33,7 @@
     "chai": "^2.2.0",
     "chai-as-promised": "^4.3.0",
     "coffee-script": "^1.9.0",
+    "coffeelint": "^1.16.0",
     "csv-stringify": "0.0.8",
     "frisby": "^0.8.3",
     "grammkit": "^0.3.1",
