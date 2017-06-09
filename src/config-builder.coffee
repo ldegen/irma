@@ -60,10 +60,11 @@ load_ = ({required=true, envVars=[], constructFileName})->
   (cfg)->
     env = envVars.map (name)->cfg.__env?[name]
     file = path.resolve constructFileName env...
-    newContent = resolveStaticPaths resolve file:file,
-                                            required:required,
-                                            configTypes: cfg.__types,
-                                            content:null
+    newContent = resolveStaticPaths resolve
+      file:file
+      required:required
+      configTypes: cfg.__types
+      content:null
 
     if envVars.length >0
       unit mergeConfigs cfg, newContent, __usedEnvVars:envVars
