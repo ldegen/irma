@@ -45,7 +45,7 @@ module.exports = (settings)->
         console.error "error",err.stack||err
         res.status(500).send err
 
-  
+
 
   service = Express()
   service.set 'port', settings.port
@@ -55,7 +55,7 @@ module.exports = (settings)->
   for mountPoint, dir of settings.static
     console.log "mounting #{dir} at #{mountPoint}"
     service.use mountPoint, Express.static dir
-    
+
   for mountPoint, {host, augment, https, preserveHostHdr} of settings.proxy
     console.log "forwarding #{mountPoint} to #{host}"
     opts =
@@ -87,6 +87,8 @@ module.exports = (settings)->
         callback null, data
 
     service.use mountPoint, proxy host, opts
+  for mointPoint, mod of settings.dynamic
+    service.get mountPoint, require(mod)
   service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
   service.use morgan('dev')
   service.use errorHandler()
@@ -94,7 +96,7 @@ module.exports = (settings)->
     res.json
       apiVersion: require("../package.json").version
   service.get '/:type/_sandbox', (req, res)->
-    
+
     options =
       query: req.query
       type: req.params.type
@@ -102,7 +104,7 @@ module.exports = (settings)->
     view = if req.query.view == "csv" then csvView else defaultView
     Promise.resolve parseRequest options
       .then (request)->
-        res.send 
+        res.send
           #query:request.query
           ast: parseQuery req.query.q ? ""
       .catch (err)->
@@ -124,10 +126,10 @@ module.exports = (settings)->
       .then ({data, mimeType, headers={}})->
         res.set header, value for header,value of headers
         if mimeType?
-          res.set 'Content-Type', mimeType 
-          if mimeType == "text/csv"  
-            toCsv data 
-          else 
+          res.set 'Content-Type', mimeType
+          if mimeType == "text/csv"
+            toCsv data
+          else
             data
         else data
       .then (data)->
@@ -137,7 +139,7 @@ module.exports = (settings)->
           .status(err.status)
           .send(err)
 
-  
+
 
 
 

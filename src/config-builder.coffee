@@ -19,14 +19,17 @@ resolveStaticPaths = ( obj)->
   dir = obj.__dirname ? if obj.__filename? then path.dirname obj.__filename
   return obj unless dir?
 
-  if obj.static?
-    tmp = {}
-    tmp[key] = path.resolve dir, value for key, value of (obj.static ? {})
-    obj.static = tmp
+  replaceEntries = (blockName)->
+    if obj[blockName]?
+      tmp = {}
+      tmp[key] = path.resolve dir, value for key, value of (obj[blockName] ? {})
+      obj[blockName] = tmp
+  replaceEntries blockName for blockName in ['static', 'dynamic']
+
   obj
 
 resolve = ({file, required, content, configTypes={}})->
-  if file? 
+  if file?
     if content?
       merge {__filename:file, __dirname:path.dirname file}, content
     else
@@ -57,16 +60,20 @@ load_ = ({required=true, envVars=[], constructFileName})->
   (cfg)->
     env = envVars.map (name)->cfg.__env?[name]
     file = path.resolve constructFileName env...
-    newContent = resolveStaticPaths resolve(file:file, required:required, configTypes: cfg.__types, content:null)
+    newContent = resolveStaticPaths resolve file:file,
+                                            required:required,
+                                            configTypes: cfg.__types,
+                                            content:null
+
     if envVars.length >0
       unit mergeConfigs cfg, newContent, __usedEnvVars:envVars
     else
       unit mergeConfigs cfg, newContent
 
-load = (opts)->sigmatch (match)-> 
-  match "s", (file)-> 
+load = (opts)->sigmatch (match)->
+  match "s", (file)->
     load_ merge opts, constructFileName: (->file)
-  match "a,f", (deps, file)-> 
+  match "a,f", (deps, file)->
     load_ merge opts, constructFileName: file, envVars: deps
   match "f", (fun)->
     deps = functionArguments fun
@@ -77,10 +84,18 @@ arrows =
   unit: (cfg)-> wrap cfg, identity
   typePath: (dirs0...)->(cfg)->
     dirs = dirs0.map (d)->path.resolve d
-    unit if dirs.length > 0 then merge cfg, __types: loadConfigTypes( dirs), __typePath:dirs else cfg
+    unit (
+      if dirs.length > 0
+        merge cfg, __types: loadConfigTypes( dirs), __typePath:dirs
+      else
+        cfg
+      )
   load: load required:true
   tryLoad: load required: false
-  add: (obj, file) -> (cfg) -> unit mergeConfigs cfg, resolveStaticPaths resolve file:(if file then path.resolve file), content:obj
+  add: (obj, file) -> (cfg) ->
+    unit mergeConfigs cfg, resolveStaticPaths resolve
+      file: if file then path.resolve file
+      content:obj
   then: (f)->if not f? then unit else ((cfg)->wrap cfg, f)
 unit = arrows.unit
 
