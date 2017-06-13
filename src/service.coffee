@@ -87,7 +87,7 @@ module.exports = (settings)->
         callback null, data
 
     service.use mountPoint, proxy host, opts
-  for mointPoint, mod of settings.dynamic
+  for mountPoint, mod of settings.dynamic
     service.get mountPoint, require(mod)
   service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
   service.use morgan('dev')
