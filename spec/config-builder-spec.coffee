@@ -7,6 +7,7 @@ describe "The ConfigBuilder", ->
   merge = require "deepmerge"
   defaults = require("../default-settings.json")
   ConfigBuilder = require "../src/config-builder"
+  ConfigNode = require "../src/config-node"
 
   tmpDir = fileA = fileB = undefined
   beforeEach ->
@@ -21,27 +22,42 @@ describe "The ConfigBuilder", ->
         """
 
   it "builds configuration objects", ->
-    expect(ConfigBuilder().cfg).to.eql defaults
+    expect(ConfigBuilder().build()).to.eql defaults
 
   it "can load yaml config files", ->
     expect(
       ConfigBuilder()
         .tryLoad fileB
         .load fileA
-        .cfg
+        .build()
     ).to.eql merge defaults, port: 4242, __files:[fileA]
 
-  xdescribe "when adding options", ->
-    it "can resolve placeholders", ->
+  describe "when adding options", ->
+    xit "can resolve placeholders", ->
       expect(
         ConfigBuilder()
           .add __env:PUBLIC_IP: "123.456.78.9"
           .add ["PUBLIC_IP"], (PUBLIC_IP)->host:PUBLIC_IP
-          .cfg
+          .build()
       ).to.eql merge defaults,
         host: "123.456.78.9"
         __env: PUBLIC_IP: "123.456.78.9"
         __usedEnvVars: ["PUBLIC_IP"]
+
+    it "allows ConfigNodes to customize the merging behaviour", ->
+      class MyNode extends ConfigNode
+        merge: (old)->
+          nada: true
+
+      oldSettings = foo:bar: new MyNode bang:baz: new MyNode oink:42
+      newSettings = foo:bar: new MyNode bang:baz: new MyNode oink:45
+
+
+      cfg = ConfigBuilder().add(oldSettings).add(newSettings).build()
+
+      expect(cfg.foo).to.eql bar:nada:true
+
+
 
   describe "when loading files", ->
     it "can resolve placeholders in filenames", ->
@@ -49,9 +65,9 @@ describe "The ConfigBuilder", ->
         ConfigBuilder()
           .add __env:HOME:tmpDir
           .load ["HOME"], (HOME)->path.join HOME,"fileA.yaml"
-          .cfg
-      ).to.eql merge defaults, 
-        port: 4242, 
+          .build()
+      ).to.eql merge defaults,
+        port: 4242,
         __files:[fileA]
         __env: HOME: tmpDir
         __usedEnvVars: ["HOME"]
@@ -61,9 +77,9 @@ describe "The ConfigBuilder", ->
         ConfigBuilder()
           .add __env:HOME:tmpDir
           .load (HOME)->path.join HOME,"fileA.yaml"
-          .cfg
-      ).to.eql merge defaults, 
-        port: 4242, 
+          .build()
+      ).to.eql merge defaults,
+        port: 4242,
         __files:[fileA]
         __env: HOME: tmpDir
         __usedEnvVars: ["HOME"]
@@ -73,6 +89,6 @@ describe "The ConfigBuilder", ->
         ConfigBuilder()
           .add __env:HOME:tmpDir
           .load path.join "{HOME}","fileA.yaml"
-          .cfg
+          .build()
       ).to.eql merge defaults, port: 4242, __files:[fileA]
 

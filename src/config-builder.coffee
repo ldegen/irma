@@ -1,6 +1,6 @@
 Promise = require "bluebird"
 functionArguments = require "function-arguments"
-merge = require "deepmerge"
+Merge = require "./merger"
 compose = (funs...)-> funs.reduceRight (a,b)->(x...)-> b a x...
 defaults = require("../default-settings.json")
 path = require "path"
@@ -8,10 +8,18 @@ bulk = require "bulk-require"
 {isArray} = require "util"
 sigmatch = require "sigmatch"
 LoadYaml = require "./load-yaml"
+ConfigNode = require "./config-node"
 loadConfigTypes = (dirs)->
   dirs
     .map (dir)-> bulk dir, '*'
     .reduce ((a,b)->merge a,b), {}
+
+merge = Merge customMerge: (lhs, rhs, pass)->
+  if rhs instanceof ConfigNode
+    if rhs.merge? then rhs.merge(lhs, merge) else rhs
+  else
+    pass
+  
 
 resolveStaticPaths = ( obj)->
   throw new Error("häh?"+obj) if typeof obj isnt "object"
@@ -103,11 +111,17 @@ unit = arrows.unit
 wrap = (cfg=defaults, action=identity)->
   bind= (f=unit)->
     m = f cfg
-    wrap m.cfg, (env, finalCfg, argv0)->
+    wrap m._cfg, (env, finalCfg, argv0)->
       Promise.resolve action env, finalCfg, argv0
         .then (argv1)->m.action env, finalCfg, argv1
-  run= (env,argv)->action env,cfg,argv
-  instance = bind: bind, action: action, cfg:cfg, run:run
+  build = ()->
+    linkedCfg = new ConfigNode cfg
+    linkedCfg.initCx()
+    linkedCfg.options
+  run= (env,argv)->
+    action env,build() ,argv
+
+  instance = bind: bind, action: action, _cfg:cfg, run:run, build:build
   for key,value of arrows when key isnt "unit"
     do (key,value)->instance[key] = (args...)->@bind value args...
   instance
