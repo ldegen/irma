@@ -1,9 +1,6 @@
 extend = require "deep-extend"
-module.exports=class DomainObject
-  constructor: (options)->
-    @options = options ? {}
-    if not (this instanceof DomainObject)
-      throw new Error("You forgot to use 'new', doh.")
+ConfigNode = require "../config-node"
+module.exports=class DomainObject extends ConfigNode
 
   augmentHit: (src,dst)->
     f = @options.augmentHit

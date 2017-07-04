@@ -2,8 +2,6 @@ Attribute = require './attribute'
 
 module.exports= class Simple extends Attribute
 
-  constructor: (options)->
-    super options
   aggregation: ->
     terms:
       field:@options.field

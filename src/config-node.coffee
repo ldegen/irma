@@ -16,7 +16,9 @@ propagate = (root, path, node)->
 
 
 module.exports = class ConfigNode
-  constructor: (@options)->
+  constructor: (@options={})->
+    if not (this instanceof ConfigNode)
+      throw new Error("You forgot to use 'new', doh.")
 
   initCx: (root=this, path=[])->
     @_root=root

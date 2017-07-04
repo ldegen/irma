@@ -1,11 +1,10 @@
-module.exports = class ByField
+ConfigNode = require "../config-node"
+module.exports = class ByField extends ConfigNode
 
 
   constructor: (options, direction) ->
-    if not (this instanceof ByField)
-      throw new Error("You forgot to use 'new', doh.")
     @directionString = direction ? 'asc'
-    @options = options
+    super options
 
     if options.prefixField?
       @aggregation = ()->

@@ -1,6 +1,7 @@
 
 extend = require "deep-extend"
-module.exports=class Attribute
+ConfigNode = require "../config-node"
+module.exports=class Attribute extends ConfigNode
   prefix = (input,len)->
     if(!input?)
       return null
@@ -14,15 +15,12 @@ module.exports=class Attribute
       if m then m[0].trim()+" …" else input
 
   constructor: (options)->
-    if not (this instanceof Attribute)
-      throw new Error("You forgot to use 'new', doh.")
-
+    super options
     # The `field` option defines what index field is backing this attribute.
     # If `field` contains dots (`.`), it will be interpreted
     # as a path of dot-separated attribute names and traversed recursively.
     @field = options.field
     @name = options.name ? options.field
-    @options = options
     
     # The `source` option defines how the field value is extracted from
     # the document source when displaying search result entries.

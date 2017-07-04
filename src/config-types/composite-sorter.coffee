@@ -1,3 +1,4 @@
+ConfigNode = require "../config-node"
 flip = (sorter)->
   d = sorter.direction()
   sorter.direction switch d
@@ -5,11 +6,11 @@ flip = (sorter)->
     when 'desc' then 'asc'
     else throw new Error "Bad direction: #{d}"
 
-module.exports = class CompositeSorter
+module.exports = class CompositeSorter extends ConfigNode
 
-  constructor: ({sorters, direction='asc'})->
-    if not (this instanceof CompositeSorter)
-      throw new Error("You forgot to use 'new', doh.")
+  constructor: (options)->
+    {sorters, direction='asc'} = options
+    super options
     @_sorters = sorters
     @_direction = direction
   

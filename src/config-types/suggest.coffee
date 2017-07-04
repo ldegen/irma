@@ -1,10 +1,7 @@
-module.exports=class Suggest
+ConfigNode = require "../config-node"
+module.exports=class Suggest extends ConfigNode
   constructor: (options)->
-    if not (this instanceof Suggest)
-      throw new Error("You forgot to use 'new', doh.")
-
-    @options ?= options
-
+    super options
     @field ?= options.field
     if typeof @field isnt "string"
       throw new Error("You *must* give me a field to work on.")
