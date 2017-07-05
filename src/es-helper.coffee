@@ -1,13 +1,10 @@
 module.exports = (settings)->
   ElasticSearch = require "elasticsearch"
-  SearchSemantic = require "./search-semantic"
-  RequestParser = require "./request-parser"
   Yaml = require "js-yaml"
   fs = require "fs"
   path = require "path"
   Promise = require "bluebird"
 
-  loadYaml = (rel)-> (Yaml.safeLoad (fs.readFileSync (path.join __dirname, rel)))
   {host, port, keepAlive, index,defaultType,debug} = settings.elasticSearch
   client = new ElasticSearch.Client
     host: "#{host}:#{port}"
@@ -47,15 +44,15 @@ module.exports = (settings)->
       index:index
       type:type ? defaultType
       id:id
-  search: ({type,size,from,query,sorter,suggest,highlight,aggs})->
+  search: ({type,size,from,query,sort,suggest,highlight,aggs})->
     searchReq=
       index:index
       type: type
-      size: size 
+      size: size
       from: from
       body:
         query: query
-        sort: sorter.sort()
+        sort: sort
         suggest: suggest
         highlight: highlight
         aggs: aggs
@@ -69,11 +66,11 @@ module.exports = (settings)->
 
     client.search(
       index:index
-      type: parser.type options 
+      type: parser.type options
       size: 1
       from: 0
       body: query: function_score:
-        query: parser.query options 
+        query: parser.query options
         functions:[
           random_score: {}#seed: Date.now()
         ]

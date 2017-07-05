@@ -1,7 +1,9 @@
 module.exports = (settings)->
-  SortParser = require "./sort-parser"
+  SortParser = settings.SortParser ? require "./sort-parser"
+  searchSemantic = settings.searchSemantic ? require("./search-semantic") settings
+  
   funs =
-    query: require("./search-semantic") settings
+    query: searchSemantic
     type: ({type=settings.defaultType})->type 
     from: ({query:{offset=0}})->offset
     size: ({query:{limit}})->
@@ -19,17 +21,20 @@ module.exports = (settings)->
         suggest[suggestion.name] = s if s?
       suggest
 
-    sorter: ({query:{sort}, type})->
+    sort: ({query:{sort}, type})->
       parse = SortParser settings.types?[type]?.sort ? {}
-      parse(sort)
+      sorter = parse(sort)
+      sorter.sort()
 
-    aggs: ({type=settings.defaultType})->
+    aggs: ({type=settings.defaultType, query:{sort}={}})->
       aggs={}
       for attr in (settings.types[type]?.attributes ? []) when attr.aggregation?
         aggs[attr.name] = attr.aggregation()
 
-      if settings?.sorter?.aggregation?
-        aggs["_offsets"] = settings.sorter.aggregation()
+      parse = SortParser settings.types?[type]?.sort ? {}
+      sorter = parse(sort)
+      if sorter?.aggregation?
+        aggs["_offsets"] = sorter.aggregation()
       aggs
   binder =  (options)->
     values = {}

@@ -120,7 +120,8 @@ module.exports = (settings)->
       type: req.params.type
 
     view = if req.query.view == "csv" then csvView else defaultView
-    es.search parseRequest options
+    Promise.resolve parseRequest(options)
+      .then es.search
       .then parseResponseBody options
       .then view options
       .then ({data, mimeType, headers={}})->

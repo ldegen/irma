@@ -1,11 +1,11 @@
 {fromJS,toJS} = require "immutable"
 module.exports = (settings)->
-  RequestParser = require "./request-parser"
-  reqParser = RequestParser settings
+  SortParser = require "./sort-parser"
   ({type, query={}})->
     ({hits, aggregations,suggest})->
       {offset=0}=query
-      sorter = reqParser.sorter query:query, type:type
+      sortParser = SortParser(settings.types?[type]?.sort ? {})
+      sorter = sortParser query.sort
       hits: hits.hits
       offset: offset
       total:hits.total

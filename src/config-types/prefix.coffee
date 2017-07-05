@@ -1,6 +1,6 @@
 Attribute = require './attribute'
 
-module.exports= class Simple extends Attribute
+module.exports= class Prefix extends Attribute
 
   filter: (paramString)->
     bool: 
