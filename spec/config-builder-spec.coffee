@@ -5,7 +5,7 @@ describe "The ConfigBuilder", ->
   mkdir = Promise.promisify require "mkdirp"
   rmdir = Promise.promisify require "rimraf"
   merge = require "deepmerge"
-  defaults = require("../default-settings.json")
+  defaults = require("../src/default-settings")
   ConfigBuilder = require "../src/config-builder"
   ConfigNode = require "../src/config-node"
 

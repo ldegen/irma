@@ -4,7 +4,7 @@ Service = require "./service"
 Net= require("net")
 http = require("http")
 merge = require "deepmerge"
-defaults = require("../default-settings")
+defaults = require("./default-settings")
 
 probeUrl = (url)->
   new Promise (resolve,reject)->

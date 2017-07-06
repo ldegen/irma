@@ -8,7 +8,6 @@ module.exports = ({customMerge}={})->
         o = {}
         for key,value of thing
           o[key]=value 
-          #console.log "copying", key
         o
       else thing
 
@@ -29,7 +28,6 @@ module.exports = ({customMerge}={})->
       merge0 lhs, rhs, output0, inplace
 
   merge0 = (lhs, rhs, output0, inplace=false)->
-    #console.log "merging", lhs, rhs, if inplace then "inplace" else "cloned"
     switch
       when not lhs? then rhs
       when rhs is null then rhs

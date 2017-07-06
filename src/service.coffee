@@ -5,9 +5,6 @@ module.exports = (settings)->
   Express = require "express"
   RequestParser = require "./request-parser"
   ResponseParser = require "./response-parser"
-  DefaultView = require "./default-view"
-  CsvView = require "./csv-view"
-  toCsv = Promise.promisify require "csv-stringify"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
@@ -17,8 +14,6 @@ module.exports = (settings)->
   parseQuery = require("./query-parser").parse
   parseRequest = RequestParser settings
   parseResponseBody = ResponseParser settings
-  defaultView = DefaultView settings
-  csvView = CsvView settings
   es = ESHelper(settings)
   P = (handler)->(req,res)->
     Promise
@@ -115,32 +110,41 @@ module.exports = (settings)->
 
 
   service.get '/:type/search', (req, res)->
+    viewName = req.query.view
+    typeName = req.params.type
     options =
       query: req.query
-      type: req.params.type
-
-    view = if req.query.view == "csv" then csvView else defaultView
-    Promise.resolve parseRequest(options)
+      type: typeName
+    if viewName?
+      view = settings.types[typeName]?.views?[viewName] ? settings.views?[viewName]
+      if not view? 
+        throw new Error("no such view: #{viewName}")
+    else
+      view = settings.views?.default ? settings.defaultView
+    Promise.resolve options
+      .then parseRequest
       .then es.search
       .then parseResponseBody options
-      .then view options
-      .then ({data, mimeType, headers={}})->
-        res.set header, value for header,value of headers
-        if mimeType?
-          res.set 'Content-Type', mimeType
-          if mimeType == "text/csv"
-            toCsv data
-          else
-            data
-        else data
-      .then (data)->
-        res.send data
+      .then view.render
+      .then sendResponse res
       .catch (err)->
+        console.error (err.stack ? err)
         res
-          .status(err.status)
+          .status(err.status ? 500)
           .send(err)
 
 
+  sendResponse = (res)->({data, mimeType, headers={}})->
+    res.set header, value for header,value of headers
+    if mimeType?
+      res.set 'Content-Type', mimeType
+      encoder = settings.bodyEncoders?[mimeType]
+      throw new Error("no encoder configured for #{mimeType}") unless encoder?
+      encoder
+        .encode data
+        .then (encodedData)-> res.send encodedData
+    else
+      res.send data
 
 
 

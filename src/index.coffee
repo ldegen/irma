@@ -10,5 +10,5 @@ module.exports =
   ConfigBuilder: require  "./config-builder"
   Cli: require "./cli"
   Server: require "./server"
-  defaults: require "../default-settings"
+  defaults: require "./default-settings"
   ConfigNode: require "./config-node"

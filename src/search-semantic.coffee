@@ -1,7 +1,6 @@
 module.exports = (settings, parser = require("./query-parser"), Query = require('./multi-match-query'))-> 
   
   ({query,type})->
-    #console.log "query",query
     attrs = settings?.types[type]?.attributes ? []
     filters = []
     queryFields = {}
