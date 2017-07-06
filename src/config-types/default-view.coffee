@@ -1,8 +1,8 @@
 {fromJS,toJS} = require "immutable"
 ConfigNode = require "../config-node"
 module.exports = class DefaultView extends ConfigNode
-  render: (searchResult)->
-    types=@root().getAt("types")
+  render: (searchResult)=>
+    types=@root().getAt(["types"])
     data: fromJS(searchResult).update "hits", (hits)->
       hits.map (hit)->
         type = hit.get "_type"
