@@ -117,7 +117,7 @@ module.exports = (settings)->
       type: typeName
     if viewName?
       view = settings.types[typeName]?.views?[viewName] ? settings.views?[viewName]
-      if not view? 
+      if not view?
         throw new Error("no such view: #{viewName}")
     else
       view = settings.views?.default ? settings.defaultView
@@ -157,8 +157,10 @@ module.exports = (settings)->
     es.random options
 
   service.get '/:type/:id' , jsonP( (req)->
+    tf = settings.types[req.params.type].documentTransform
+
     es.fetch(req.params.id,req.params.type).then (body)->
-      body._source
+      if tf? and tf.transform? then tf.transform body._source else body._source
   )
 
   service
