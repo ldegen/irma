@@ -4,6 +4,8 @@ start = _ expr:Expression _ {return expr;}
 Expression
   = Disjunctive
 
+//The terms "disjunctive" and "conjunctive" are used to describe binding priority,
+// not semantics! A "conjunctive" expression binds stronger than a "disjunctive" one. That's all.
 Disjunctive
   = OrExpression
   / Sequence

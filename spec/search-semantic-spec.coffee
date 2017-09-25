@@ -27,7 +27,9 @@ describe "The Search Semantic", ->
 
   it "builds a query using the given parser, query semantics and the fields of all attributes that contribute to the full-text search", ->
     expect(semantic query:{q:"bienen"},type:'project').to.eql
-      bool:
+      ast: parsed: "bienen"
+      fields: ['q2','q3','q4']
+      query: bool:
         must:
           testQuery:
             ast: parsed: "bienen"
@@ -39,23 +41,26 @@ describe "The Search Semantic", ->
 
   it "ommits the query part if given an empty query string", ->
     expect(semantic(query:{q:""}, type:'project')).to.eql
-      bool:
+      fields: ['q2','q3','q4']
+      query: bool:
         filter: []
 
   it "ommits the query part if given a query string containing only whitespace", ->
     expect(semantic(query:{q:"   "},type:'project')).to.eql
-      bool:
+      fields: ['q2','q3','q4']
+      query: bool:
         filter: []
 
   it "ommits the query part if given something falsy instead of a query string", ->
     expect(semantic(query:{},type:'project')).to.eql
-      bool:
+      fields: ['q2','q3','q4']
+      query: bool:
         filter: []
 
 
   it "supports filtering by attributes for attributes providing a filter expression", ->
     query=semantic query:{q:"bienen", fachgebiet: "42,43"},type:'project'
-    expect(query.bool.filter).to.eql [
+    expect(query.query.bool.filter).to.eql [
       f1:"42,43"
     ]
 

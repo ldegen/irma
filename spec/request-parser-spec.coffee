@@ -22,7 +22,7 @@ describe "The Request Parser", ->
       myType: myType
       defaultType: myType
     defaultType: "defaultType"
-    searchSemantic: (input)->input: input
+    searchSemantic: (input)->query:input: input
     SortParser:(parserSettings)->(sortExpression)->
       sort: ->
         sortExpression: sortExpression

@@ -12,6 +12,8 @@ module.exports = class DefaultView extends ConfigNode
           data:
             id:hit.get "_id"
             type: type
+        dstHit.explanation = hit.get "_explanation" if hit.has "_explanation"
+        dstHit.fields = hit.get "fields" if hit.has "fields"
 
         # apply attribute-specific augmentations
         for attr in attributes when attr.augmentHit?

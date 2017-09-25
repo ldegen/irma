@@ -44,13 +44,15 @@ module.exports = (settings)->
       index:index
       type:type ? defaultType
       id:id
-  search: ({type,size,from,query,sort,suggest,highlight,aggs})->
+  search: ({type,size,from,query,sort,suggest,highlight,aggs,explain,ast,fields})->
     searchReq=
       index:index
       type: type
       size: size
       from: from
       body:
+        fielddata_fields:fields ? []
+        explain:explain
         query: query
         sort: sort
         suggest: suggest
@@ -60,8 +62,12 @@ module.exports = (settings)->
     client.search(searchReq)
       .then (resp)->
         console.log "resp", require("util").inspect resp,false,null if debug
+        resp._request = searchReq if explain
+        resp._ast = ast if explain
         resp
 
+  analyze: ({field, text})->
+    client.indices.analyze {index,text,field}
   random: (options)->
 
     client.search(

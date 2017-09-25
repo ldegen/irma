@@ -2,11 +2,13 @@
 module.exports = (settings)->
   SortParser = require "./sort-parser"
   ({type, query={}})->
-    ({hits, aggregations,suggest})->
+    ({hits, aggregations,suggest,_request,_ast})->
       {offset=0}=query
       sortParser = SortParser(settings.types?[type]?.sort ? {})
       sorter = sortParser query.sort
       hits: hits.hits
+      _request: _request
+      _ast: _ast
       offset: offset
       total:hits.total
       facetCounts: (settings.types[type].attributes ? [])

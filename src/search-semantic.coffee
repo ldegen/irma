@@ -13,13 +13,15 @@ module.exports = (settings, parser = require("./query-parser"), Query = require(
         filters.push attr.filter(value)
 
     r=
-      bool:
-        filter: filters
+      fields: Object.keys(queryFields)
+      query:
+        bool:
+          filter: filters
 
     if query?.q? and query?.q?.trim() != ""
-      ast = parser.parse query.q
+      r.ast = parser.parse query.q
       querySemantic = Query
         fields:queryFields
-      r.bool.must = querySemantic ast
+      r.query.bool.must = querySemantic r.ast
 
     r
