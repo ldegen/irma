@@ -25,7 +25,7 @@ describe "The Search Semantic", ->
         ast: ast
   semantic = SearchSemantic settings, parser, Query
 
-  it "builds a query using the given parser, query semantics and the fields of all attributes that contribute to the full-text search", ->
+  xit "builds a query using the given parser, query semantics and the fields of all attributes that contribute to the full-text search", ->
     expect(semantic query:{q:"bienen"},type:'project').to.eql
       ast: parsed: "bienen"
       fields: ['q2','q3','q4']

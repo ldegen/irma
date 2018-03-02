@@ -1,14 +1,17 @@
-describe "The Multi-Match Query", ->
-  query = undefined
-  Query = require "../src/multi-match-query"
+describe "The default AST Transformer", ->
 
+  # this is the one used by the multi-match query by default.
+
+  Transformer = require "../../src/config-types/ast-transformer"
+
+  transformer = null
 
   beforeEach ->
-    query = Query
+    transformer = new Transformer
       fields: ['field_a','field_b', 'field_c']
 
   it "creates a query that requires each term to occur in at least one field", ->
-    expect(query(['TERMS', 'a' ,'b','c'])).to.eql
+    expect(transformer.transform(['TERMS', 'a' ,'b','c'])).to.eql
       multi_match:
         query: 'a b c'
         type: 'cross_fields'
@@ -16,7 +19,7 @@ describe "The Multi-Match Query", ->
         operator: 'and'
 
   it "understands OR Nodes", ->
-    expect(query(['OR', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
+    expect(transformer.transform(['OR', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
       bool:
         should:[
           multi_match:
@@ -32,7 +35,7 @@ describe "The Multi-Match Query", ->
             operator: 'and'
         ]
   it "understands AND nodes", ->
-    expect(query(['AND', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
+    expect(transformer.transform(['AND', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
       bool:
         must:[
           multi_match:
@@ -48,7 +51,7 @@ describe "The Multi-Match Query", ->
             operator: 'and'
         ]
   it "understands NOT nodes", ->
-    expect(query(['NOT', ['TERMS','a','b','c'] ])).to.eql
+    expect(transformer.transform(['NOT', ['TERMS','a','b','c'] ])).to.eql
       bool:
         must_not:[
           multi_match:
@@ -58,7 +61,7 @@ describe "The Multi-Match Query", ->
             operator: 'and'
         ]
   it "interpretes SEQ nodes just like conjunctions", ->
-    expect(query(['SEQ', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
+    expect(transformer.transform(['SEQ', ['TERMS','a','b','c'], ['TERMS', 'd', 'e']])).to.eql
       bool:
         must:[
           multi_match:

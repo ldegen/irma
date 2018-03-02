@@ -1,27 +1,32 @@
-module.exports = (settings, parser = require("./query-parser"), Query = require('./multi-match-query'))-> 
+# the job of the search semantic module is to create the actual elasticsearch query from the
+# request query parameters.
+#
+# This module does not do much itself. Instead, it gathers a list of QueryBuilders from the
+# configuration, passes them the current type and query and lets them construct the parts of 
+# the elasticsearch query.
+#
+# The results of all query builders are merged and returned.
+# 
+MultiMatchQuery = require "./config-types/multi-match-query"
+FilterQuery = require "./config-types/filter-query"
+Merger = require "./merger"
+merge = Merger()
+module.exports = (settings)->
+  defaultQueryComponents = [
+    new MultiMatchQuery()
+    new FilterQuery()
+  ]
   
-  ({query,type})->
-    attrs = settings?.types[type]?.attributes ? []
-    filters = []
-    queryFields = {}
-    for attr in attrs when attr.query
-      queryFields[attr.field] = attr.boost ? 1
+  ({query,type:typeName})->
+    type = settings?.types[typeName]
 
-    for attr in attrs  when attr.filter?
-      value = query[attr?.name]
-      if(value?)
-        filters.push attr.filter(value)
+    queryComponents = type?.queryComponents ? settings?.queryComponents ? defaultQueryComponents
 
-    r=
-      fields: Object.keys(queryFields)
-      query:
-        bool:
-          filter: filters
+    mergeX = (a,b)->
+      merge(a,b)
 
-    if query?.q? and query?.q?.trim() != ""
-      r.ast = parser.parse query.q
-      querySemantic = Query
-        fields:queryFields
-      r.query.bool.must = querySemantic r.ast
+    r = queryComponents
+      .map (qc)->qc.create(query,type)
+      .reduce mergeX, {}
 
     r
