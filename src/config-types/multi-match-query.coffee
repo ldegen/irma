@@ -7,24 +7,24 @@ module.exports = class MultiMatchQuery extends ConfigNode
     parser = @options.parser ? defaultParser
     parser.parse queryString
 
-  transform: ( ast, type)->
-    transformer = @options.transformer ? new Transformer 
+  transform: ( ast, type, query)->
+    transformer = @options.transformer ? new Transformer
       postProcess:(body, {fieldNames})->
         if Object.keys(body).length is 0
           fields:fieldNames
         else
           fields:fieldNames
           query:bool:must:body
-    transformer.transform ast, type
+    transformer.transform ast, type, query
 
   create: (query, type)->
-    
+
     queryString =query.q
 
     if queryString? and queryString.trim().length > 0
       ast = @parse queryString
     else
       ast = []
-    @transform  ast, type
-    
+    @transform  ast, type, query
+
 
