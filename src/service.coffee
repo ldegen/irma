@@ -165,6 +165,13 @@ module.exports = (settings)->
       if tf? and tf.transform? then tf.transform body._source else body._source
   )
 
+  if settings.plugins?
+    for plugin in settings.plugins
+      if typeof plugin.install == 'function'
+        plugin.install service
+      else
+        console.error 'function install missing in plugin'
+
   service
 
 
