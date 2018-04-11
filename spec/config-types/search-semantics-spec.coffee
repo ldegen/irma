@@ -1,6 +1,6 @@
 describe "The Search Semantic", ->
-  SearchSemantics = require "../src/search-semantic"
-  ConfigNode = require "../src/config-node"
+  SearchSemantics = require "../../src/config-types/search-semantics"
+  ConfigNode = require "../../src/config-node"
 
   settings = undefined
   semantics = undefined

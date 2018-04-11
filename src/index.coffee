@@ -10,6 +10,7 @@ module.exports =
   MultiMatchQuery: require "./config-types/multi-match-query"
   FilterQuery: require "./config-types/filter-query"
   AstTransformer: require "./config-types/ast-transformer"
+  SearchSemantics: require "./config-types/search-semantics"
   ConfigBuilder: require  "./config-builder"
   Cli: require "./cli"
   Server: require "./server"

@@ -1,9 +1,9 @@
 DefaultView = require "./config-types/default-view"
 CsvEncoder = require "./config-types/csv-encoder"
-SearchSemantic = require "./search-semantic"
+SearchSemantics = require "./config-types/search-semantics"
 
 module.exports =
-  searchSemantic: new SearchSemantic
+  searchSemantics: new SearchSemantics
   bodyEncoders:
     "text/csv": new CsvEncoder {}
   defaultView:  new DefaultView

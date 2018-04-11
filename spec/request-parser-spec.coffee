@@ -23,7 +23,7 @@ describe "The Request Parser", ->
       myType: myType
       defaultType: myType
     defaultType: "defaultType"
-    searchSemantic: apply: (input)->query:input: input
+    searchSemantics: apply: (input)->query:input: input
     SortParser:(parserSettings)->(sortExpression)->
       sort: ->
         sortExpression: sortExpression
@@ -36,7 +36,7 @@ describe "The Request Parser", ->
     config = merge settings, overrides
     RequestParser config
   
-  it "uses the SearchSemantic to create an ES-Query from the request's query string", ->
+  it "uses the SearchSemantics to create an ES-Query from the request's query string", ->
     rp = RP()
     expect(rp.query(query: "foobar")).to.eql input:query: "foobar"
 

@@ -1,12 +1,12 @@
 module.exports = (settings)->
   SortParser = settings.SortParser ? require "./sort-parser"
-  searchSemantic = settings.searchSemantic
+  searchSemantics = settings.searchSemantics
   queryParser = require "./query-parser"
   funs =
     explain:({query:{explain='false'}})->'true'==explain
-    ast:(args)->if args?.query?.explain == 'true' then searchSemantic.apply(args, settings).ast else null
-    fields:(args)->if args?.query?.explain == 'true' then searchSemantic.apply(args, settings).fields else null
-    query: (args)->searchSemantic.apply(args, settings).query
+    ast:(args)->if args?.query?.explain == 'true' then searchSemantics.apply(args, settings).ast else null
+    fields:(args)->if args?.query?.explain == 'true' then searchSemantics.apply(args, settings).fields else null
+    query: (args)->searchSemantics.apply(args, settings).query
     type: ({type=settings.defaultType})->type 
     from: ({query:{offset=0}})->offset
     size: ({query:{limit}})->
