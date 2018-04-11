@@ -114,10 +114,7 @@ wrap = (cfg=defaults, action=identity)->
     wrap m._cfg, (env, finalCfg, argv0)->
       Promise.resolve action env, finalCfg, argv0
         .then (argv1)->m.action env, finalCfg, argv1
-  build = ()->
-    linkedCfg = new ConfigNode cfg
-    linkedCfg.initCx()
-    linkedCfg.options
+  build = ()->cfg
   run= (env,argv)->
     action env,build() ,argv
 

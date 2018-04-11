@@ -39,6 +39,7 @@ describe "The ConfigBuilder", ->
           .add __env:PUBLIC_IP: "123.456.78.9"
           .add ["PUBLIC_IP"], (PUBLIC_IP)->host:PUBLIC_IP
           .build()
+          
       ).to.eql merge defaults,
         host: "123.456.78.9"
         __env: PUBLIC_IP: "123.456.78.9"

@@ -4,6 +4,7 @@ module.exports = class Fulltext extends Attribute
     super options
     @boost = options.boost
     @query = options.query ? true
+    @includeSubfields = options.includeSubfields ? false
 
     if not @query
       @filter=(paramString)->
@@ -13,5 +14,5 @@ module.exports = class Fulltext extends Attribute
 
 
   highlight: ->
-    @options.highlight ? {}
+    @_options.highlight ? {}
   

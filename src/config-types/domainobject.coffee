@@ -3,7 +3,7 @@ ConfigNode = require "../config-node"
 module.exports=class DomainObject extends ConfigNode
 
   augmentHit: (src,dst)->
-    f = @options.augmentHit
+    f = @_options.augmentHit
     if f?
       augmentation = f.call this, src, dst
       if f.length < 2 # the callback did not explicitly deal with dst

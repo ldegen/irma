@@ -28,15 +28,15 @@ module.exports=class Attribute extends ConfigNode
     # the corresponding attribute from the document.
     @source ?= options.source ? (src)->
       @field.split('.').reduce ((prev,cur)->prev?[cur]), src
-    if @options.augmentHit?
+    if @_options.augmentHit?
       @augmentHit ?= (src,dst)->
-        f = @options.augmentHit
-        augmentation = f.call this, (@renderResult src), src, dst
+        f = @_options.augmentHit
+        input = @renderResult src
+        augmentation = f.call this, input, src, dst
         if f.length < 3 # the callback did not explicitly deal with dst
           switch typeof augmentation
             when 'function' then augmentation(dst)
             when 'object' then extend dst, augmentation
             else throw new Error('duh?!')
-      
   renderResult: (hit)->
-    hit.highlight?[@field]?.join(" … ") ? prefix(@source(hit._source),@options.teaserLength ? 150)
+    hit.highlight?[@field]?.join(" … ") ? prefix(@source(hit._source),@_options.teaserLength ? 150)

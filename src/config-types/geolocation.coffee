@@ -4,7 +4,7 @@ module.exports = class Geolocation extends Attribute
 
   filter: (parmString) ->
     [lat,lon,dist] = parmString.trim().split /\s*,\s*/
-    field = @options?.field ? 'geolocation'
+    field = @_options?.field ? 'geolocation'
     geo_distance:
       distance: dist
       "#{field}":

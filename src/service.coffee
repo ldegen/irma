@@ -127,7 +127,7 @@ module.exports = (settings)->
       .then parseRequest
       .then es.search
       .then parseResponseBody options
-      .then view.render
+      .then view.render settings, options
       .then sendResponse res
       .catch (err)->
         console.error (err.stack ? err)

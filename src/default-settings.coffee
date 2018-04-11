@@ -1,13 +1,14 @@
 DefaultView = require "./config-types/default-view"
 CsvEncoder = require "./config-types/csv-encoder"
-defaultView = new DefaultView {}
+SearchSemantic = require "./search-semantic"
 
 module.exports =
+  searchSemantic: new SearchSemantic
   bodyEncoders:
     "text/csv": new CsvEncoder {}
-  defaultView: defaultView
+  defaultView:  new DefaultView
   views:
-    default: defaultView
+    default:  new DefaultView
   host: 'localhost'
   port: 9999
   elasticSearch:

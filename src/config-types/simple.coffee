@@ -4,16 +4,16 @@ module.exports= class Simple extends Attribute
 
   aggregation: ->
     terms:
-      field:@options.field
-      size:@options.buckets ? 0
+      field:@_options.field
+      size:@_options.buckets ? 0
   filter: (paramString)->
-    parse = switch @options?.type
+    parse = switch @_options?.type
       when "integer","date" then (s) ->parseInt s
       when "float" then (s) -> parseFloat s
       when "boolean" then (s) -> s?.toLowerCase().trim() == "true"
       else (s) -> s
     terms = {}
-    terms[@options.field] = (paramString.split ',').map parse
+    terms[@_options.field] = (paramString.split ',').map parse
     terms:terms
   interpreteAggResult: (aggBody)->
     buckets = {}

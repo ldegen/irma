@@ -7,20 +7,21 @@
 #
 # The results of all query builders are merged and returned.
 # 
+ConfigNode = require "./config-node"
 MultiMatchQuery = require "./config-types/multi-match-query"
 FilterQuery = require "./config-types/filter-query"
 Merger = require "./merger"
 merge = Merger()
-module.exports = (settings)->
-  defaultQueryComponents = [
-    new MultiMatchQuery()
-    new FilterQuery()
-  ]
-  
-  ({query,type:typeName})->
+module.exports = class SearchSemantics extends ConfigNode
+  apply: ({query, type:typeName}, settings)->
+    defaultQueryComponents = [
+      new MultiMatchQuery()
+      new FilterQuery()
+    ]
+     
     type = settings?.types[typeName]
 
-    queryComponents = type?.queryComponents ? settings?.queryComponents ? defaultQueryComponents
+    queryComponents = @queryComponents ? defaultQueryComponents
 
     mergeX = (a,b)->
       merge(a,b)

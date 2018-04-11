@@ -8,12 +8,13 @@ module.exports = class AstTransformer extends ConfigNode
 
   queryFields: (type)->
     queryFields = {}
-    if @options.fields?
-      return @options.fields
+    if @_options.fields?
+      return @_options.fields
 
     attrs = type?.attributes ? []
     for attr in attrs when attr.query
-      queryFields[attr.field] = attr.boost ? 1
+      fieldName = if attr.includeSubfields then attr.field+"*" else attr.field
+      queryFields[fieldName] = attr.boost ? 1
     queryFields
 
   transform: (ast, type, query)->
@@ -21,7 +22,7 @@ module.exports = class AstTransformer extends ConfigNode
     fieldBoosts = if isArray(queryFields) then queryFields else ("#{fieldName}^#{boost}" for fieldName, boost of queryFields)
     fieldNames = if isArray(queryFields) then queryFields else Object.keys queryFields
 
-    defaultOperator = query?.qop ? @options?.defaultOperator ? "and"
+    defaultOperator = query?.qop ? @_options?.defaultOperator ? "and"
 
     transformers =
       TERMS: (operands)->
@@ -60,7 +61,7 @@ module.exports = class AstTransformer extends ConfigNode
     @postProcess body, {queryFields,type,fieldNames, fieldBoosts}
 
   postProcess: (body, options)->
-    if @options?.postProcess?
-      @options.postProcess body, options
+    if @_options?.postProcess?
+      @_options.postProcess body, options
     else
       body

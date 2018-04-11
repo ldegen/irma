@@ -34,11 +34,11 @@ module.exports = class ByField extends ConfigNode
         
 
   direction: (string)-> 
-    if string? then new ByField @options, string else @directionString
+    if string? then new ByField @_options, string else @directionString
   sort: ()->
     direction = @directionString
-    fields = @options.fields?.slice(0) ? []
-    fields.unshift @options.field if @options.field
+    fields = @_options.fields?.slice(0) ? []
+    fields.unshift @_options.field if @_options.field
     if fields.length == 1
       "#{fields[0]}": direction
     else
