@@ -1,5 +1,4 @@
 Promise = require "bluebird"
-ESHelper = require "./es-helper"
 Service = require "./service"
 Net= require("net")
 http = require("http")
