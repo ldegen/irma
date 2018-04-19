@@ -47,19 +47,7 @@ module.exports = (settings)->
       id:id
   search: (searchReq0)->
     searchReq = merge searchReq0, index: index
-    #searchReq=
-      #index:index
-      #type: type
-      #size: size
-      #from: from
-      #body:
-        #fielddata_fields:fields ? []
-        #explain:explain
-        #query: query
-        #sort: sort
-        #suggest: suggest
-        #highlight: highlight
-        #aggs: aggs
+    {body:{explain=false} = {}} = searchReq
     console.log "searchReq",require("util").inspect searchReq,false, null if debug
     client.search(searchReq)
       .then (resp)->
