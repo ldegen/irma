@@ -40,17 +40,17 @@ module.exports = (settings, args)->
   explain = 'true' is query.explain
   limit = Math.min (query.limit ? settings.defaultLimit ? 20), (settings. hardLimit ? 250)
   offset = query.offset ? 0
-
-  type: type
-  size: limit
-  from: offset
-  ast: if explain then searchSemantics.apply(args, settings).ast else null
-  body:
-    fielddata_fields: if explain then searchSemantics.apply(args, settings).fields else []
-    explain: explain
-    query: searchSemantics.apply(args, settings).query
-    sort: sort(args, settings)
-    suggest: suggest(args, settings)
-    highlight: fields: highlightFields(args,settings)
-    aggs: aggregations(args, settings)
+  ()->
+    type: type
+    size: limit
+    from: offset
+    ast: if explain then searchSemantics.apply(args, settings).ast else null
+    body:
+      fielddata_fields: if explain then searchSemantics.apply(args, settings).fields else []
+      explain: explain
+      query: searchSemantics.apply(args, settings).query
+      sort: sort(args, settings)
+      suggest: suggest(args, settings)
+      highlight: fields: highlightFields(args,settings)
+      aggs: aggregations(args, settings)
       

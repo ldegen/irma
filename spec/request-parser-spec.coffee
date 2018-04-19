@@ -34,7 +34,7 @@ describe "The Request Parser", ->
 
   RP = (overrides={})->(args) ->
     config = merge settings, overrides
-    RequestParser config, args
+    RequestParser(config, args)(args)
   
   it "uses the SearchSemantics to create an ES-Query from the request's query string", ->
     rp = RP()
