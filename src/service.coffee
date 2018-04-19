@@ -12,8 +12,6 @@ module.exports = (settings)->
 
   bulk = require "bulk-require"
   parseQuery = require("./query-parser").parse
-  parseRequest = RequestParser settings
-  parseResponseBody = ResponseParser settings
   es = ESHelper(settings)
   P = (handler)->(req,res)->
     Promise
@@ -90,22 +88,6 @@ module.exports = (settings)->
   service.get '/_irma', (req,res)->
     res.json
       apiVersion: require("../package.json").version
-  service.get '/:type/_sandbox', (req, res)->
-
-    options =
-      query: req.query
-      type: req.params.type
-
-    view = if req.query.view == "csv" then csvView else defaultView
-    Promise.resolve parseRequest options
-      .then (request)->
-        res.send
-          #query:request.query
-          ast: parseQuery req.query.q ? ""
-      .catch (err)->
-        res
-          .status(err.status)
-          .send(err)
 
 
 
@@ -123,10 +105,19 @@ module.exports = (settings)->
         throw new Error("no such view: #{viewName}")
     else
       view = settings.views?.default ? settings.defaultView
+    # FIXME: Ideally, this would be a pipeline consiting of two (or three?)
+    # Phases: 
+    #  - request phase transforms the information contained in the request
+    #    into a search request that is passed to elasticsearch
+    #  - response phase transforms the information contained in the response
+    #    received from elasticsearch into the *our* response, i.e. what we want
+    #    to send to our client.
+    #
+    # We are getting there, but we are not there yet.
     Promise.resolve options
-      .then parseRequest
+      .then RequestParser settings, options
       .then es.search
-      .then parseResponseBody options
+      .then ResponseParser settings, options
       .then view.render settings, options
       .then sendResponse res
       .catch (err)->

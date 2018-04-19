@@ -37,7 +37,6 @@ describe "The Response Parser", ->
         ]
   docIds = ['a','b','c','d']
 
-  parser = Parser settings
   query = 
     offset: 42
     sort:"by_fnord"
@@ -55,7 +54,7 @@ describe "The Response Parser", ->
     suggest:
       foo: {}
 
-  parse = parser query:query, type:"foo"
+  parse = Parser settings, query:query, type:"foo"
 
   it "passes hits documents verbatim",->
     {hits} = parse respBody

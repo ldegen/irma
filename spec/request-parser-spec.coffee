@@ -32,26 +32,26 @@ describe "The Request Parser", ->
     #defaultLimit: 42
     #hardLimit: 500
 
-  RP = (overrides={})->
+  RP = (overrides={})->(args) ->
     config = merge settings, overrides
-    RequestParser config
+    RequestParser config, args
   
   it "uses the SearchSemantics to create an ES-Query from the request's query string", ->
     rp = RP()
-    expect(rp.query(query: "foobar")).to.eql input:query: "foobar"
+    expect(rp(query: "foobar").body.query).to.eql input:query: "foobar"
 
   it "looks up the type in the settings, falling back to the default type if none is specified in the query", ->
     rp = RP()
-    expect(rp.type(type: "myType")).to.equal "myType"
-    expect(rp.type({})).to.equal "defaultType"
+    expect(rp(type: "myType").type).to.equal "myType"
+    expect(rp({}).type).to.equal "defaultType"
 
   it "handles offset and limit parameters, adhering to the configured default and hard limit", ->
     rp = RP defaultLimit: 42, hardLimit:500
-    expect(rp.from(query:{})).to.eql 0
-    expect(rp.from(query:offset:42)).to.eql 42
-    expect(rp.size(query:{})).to.eql 42
-    expect(rp.size(query:{limit:10})).to.eql 10
-    expect(rp.size(query:{limit:100000})).to.eql 500
+    expect(rp(query:{}).from).to.eql 0
+    expect(rp(query:offset:42).from).to.eql 42
+    expect(rp(query:{}).size).to.eql 42
+    expect(rp(query:{limit:10}).size).to.eql 10
+    expect(rp(query:{limit:100000}).size).to.eql 500
 
   # NOTE:
   # A lot of work is delegated to attributes and other config types.
@@ -64,7 +64,7 @@ describe "The Request Parser", ->
 
   it "delegates creation of highlighting directives to the attributes", ->
     rp=RP()
-    expect(rp.highlight(type:'myType')).to.eql
+    expect(rp(type:'myType').body.highlight).to.eql
       fields:
         foo: "highlight me"
         bar: "highlight me"
@@ -78,14 +78,14 @@ describe "The Request Parser", ->
       build: (q)-> suggestion:q
     ]
 
-    expect(rp.suggest query:"oink", type:"myType").to.eql
+    expect(rp(query:"oink", type:"myType").body.suggest).to.eql
       lorem: suggestion: "oink"
       ipsum: suggestion: "oink"
 
   it "interpretes the `sort`-parameter, taking into  
       account the sort criteria configured for the type", ->
     rp = RP types:myType:sort: some:"sorterSettings"
-    expect(rp.sort type: "myType", query:sort:"trallalla").to.eql
+    expect(rp(type: "myType", query:sort:"trallalla").body.sort).to.eql
       sortParserSettings: some:"sorterSettings"
       sortExpression:"trallalla"
 
@@ -97,12 +97,12 @@ describe "The Request Parser", ->
       name: "bar"
       aggregation: -> "bar_aggregation"
     ]
-    expect(rp.aggs type: "myType").to.eql
+    expect(rp( type: "myType").body.aggs).to.eql
       foo: "foo_aggregation"
       bar: "bar_aggregation"
 
   it "adds aggs-directives for sorters that require them", ->
     rp = RP types:myType:sort: 
       aggregation: -> "some aggregation"
-    expect(rp.aggs type: "myType",query:sort:"blablabla").to.eql
+    expect(rp(type: "myType",query:sort:"blablabla").body.aggs).to.eql
       _offsets: "some aggregation"

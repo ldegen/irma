@@ -4,6 +4,7 @@ module.exports = (settings)->
   fs = require "fs"
   path = require "path"
   Promise = require "bluebird"
+  merge = require "deepmerge"
 
   {host, port, keepAlive, index,defaultType,debug} = settings.elasticSearch
   client = new ElasticSearch.Client
@@ -44,20 +45,21 @@ module.exports = (settings)->
       index:index
       type:type ? defaultType
       id:id
-  search: ({type,size,from,query,sort,suggest,highlight,aggs,explain,ast,fields})->
-    searchReq=
-      index:index
-      type: type
-      size: size
-      from: from
-      body:
-        fielddata_fields:fields ? []
-        explain:explain
-        query: query
-        sort: sort
-        suggest: suggest
-        highlight: highlight
-        aggs: aggs
+  search: (searchReq0)->
+    searchReq = merge searchReq0, index: index
+    #searchReq=
+      #index:index
+      #type: type
+      #size: size
+      #from: from
+      #body:
+        #fielddata_fields:fields ? []
+        #explain:explain
+        #query: query
+        #sort: sort
+        #suggest: suggest
+        #highlight: highlight
+        #aggs: aggs
     console.log "searchReq",require("util").inspect searchReq,false, null if debug
     client.search(searchReq)
       .then (resp)->
