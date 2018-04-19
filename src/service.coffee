@@ -116,6 +116,7 @@ module.exports = (settings)->
     # We are getting there, but we are not there yet.
     Promise.resolve options
       .then RequestParser settings, options
+      .then transformRequest settings, options
       .then es.search
       .then ResponseParser settings, options
       .then view.render settings, options
@@ -126,6 +127,15 @@ module.exports = (settings)->
           .status(err.status ? 500)
           .send(err)
 
+  identity = (x)->x
+  transformRequest = (settings, options) -> (req)->
+    tf = settings.searchRequestTransformer ? identity
+    if typeof tf is "function"
+      tf req, settings, options
+    else if typeof tf.transform is "function"
+      tf.transform req, settings, options
+    else
+      throw new Error "No idea how to apply request transformation."
 
   sendResponse = (res)->({data, mimeType, headers={}})->
     res.set header, value for header,value of headers
