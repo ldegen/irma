@@ -12,6 +12,7 @@ MultiMatchQuery = require "./multi-match-query"
 FilterQuery = require "./filter-query"
 Merger = require "../merger"
 {isArray} = require "util"
+call = require "../call"
 merge = Merger customMerge: (lhs,rhs,pass)->
   if isArray(lhs) and isArray(rhs) 
     lhs.concat rhs
@@ -24,9 +25,8 @@ module.exports = class SearchSemantics extends ConfigNode
     ]
      
     type = settings?.types[typeName]
-
     identity = (x)->x
-    postprocess = if typeof @_options?.postprocess == 'function' then @_options.postprocess else identity
+    postprocess = @_options?.postprocess ? identity
     queryComponents = @_options?.queryComponents ? defaultQueryComponents
     reducer = @_options?.reducer ? (a,b)->merge(a,b)
     initialQuery = @_options?.initialQuery ? {}
@@ -36,4 +36,4 @@ module.exports = class SearchSemantics extends ConfigNode
       .map (qc)->qc.create(query,type, attributes)
       .reduce reducer, (if typeof initialQuery is 'function' then initialQuery(query,type) else initialQuery)
 
-    postprocess r
+    call(postprocess) r
