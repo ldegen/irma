@@ -7,7 +7,7 @@ mapObj = (obj,f)->
   r
 
 module.exports = class SearchResponseParser extends ConfigNode
-  transformResponse: (searchRequest, settings)->
+  transform: (searchRequest, settings)->
     {
       facetCounts, sections, suggestions,
       hits, _request, _ast, offset, total

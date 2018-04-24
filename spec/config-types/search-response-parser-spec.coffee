@@ -55,7 +55,7 @@ describe "The Response Parser", ->
       foo: {}
 
   parser = new SearchResponseParser 
-  parse = parser.transformResponse {query:query, type:"foo"}, settings
+  parse = parser.transform {query:query, type:"foo"}, settings
 
   it "passes hits documents verbatim",->
     {hits} = parse respBody
