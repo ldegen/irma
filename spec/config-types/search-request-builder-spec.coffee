@@ -13,9 +13,11 @@ describe "The Request Parser", ->
   myType=
     attributes:[
       name: "foo"
+      field: "foo"
       highlight: -> "highlight me"
     ,
       name: "bar"
+      field: "bar"
       highlight: -> "highlight me"
     ]
   settings =
