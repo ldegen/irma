@@ -4,7 +4,7 @@ module.exports= class Simple extends Attribute
 
   aggregation: ->
     terms:
-      field:@_options.field
+      field:@field
       size:@_options.buckets ? 0
   filter: (paramString)->
     parse = switch @_options?.type
@@ -13,7 +13,7 @@ module.exports= class Simple extends Attribute
       when "boolean" then (s) -> s?.toLowerCase().trim() == "true"
       else (s) -> s
     terms = {}
-    terms[@_options.field] = (paramString.split ',').map parse
+    terms[@field] = (paramString.split ',').map parse
     terms:terms
   interpreteAggResult: (aggBody)->
     buckets = {}

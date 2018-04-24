@@ -3,12 +3,13 @@ module.exports = (settings)->
   Path = require "path"
   ESHelper = require "./es-helper"
   Express = require "express"
-  RequestParser = require "./request-parser"
+  SearchRequestBuilder = require "./config-types/search-request-builder"
   ResponseParser = require "./response-parser"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
   cheerio = require "cheerio"
+  call = require "./call"
 
   bulk = require "bulk-require"
   parseQuery = require("./query-parser").parse
@@ -96,46 +97,24 @@ module.exports = (settings)->
   service.get '/:type/search', (req, res)->
     viewName = req.query.view
     typeName = req.params.type
-    options =
+    searchRequest =
       query: req.query
       type: typeName
-    if viewName?
-      view = settings.types[typeName]?.views?[viewName] ? settings.views?[viewName]
-      if not view?
-        throw new Error("no such view: #{viewName}")
-    else
-      view = settings.views?.default ? settings.defaultView
-    # FIXME: Ideally, this would be a pipeline consiting of two (or three?)
-    # Phases: 
-    #  - request phase transforms the information contained in the request
-    #    into a search request that is passed to elasticsearch
-    #  - response phase transforms the information contained in the response
-    #    received from elasticsearch into the *our* response, i.e. what we want
-    #    to send to our client.
-    #
-    # We are getting there, but we are not there yet.
-    Promise.resolve options
-      .then RequestParser settings, options
-      .then transformRequest settings, options
+    type = settings.types[typeName] ? {}
+    identity = ()->(x)->(x)
+    requestFilter = type.searchRequestFilter ? settings.searchRequestFilter ? identity
+    responseFilter = type.searchResponseFilter ? settings.searchResponseFilter ? identity
+
+    Promise.resolve searchRequest
+      .then call(requestFilter) searchRequest, settings
       .then es.search
-      .then ResponseParser settings, options
-      .then view.render settings, options
+      .then call(responseFilter) searchRequest, settings
       .then sendResponse res
       .catch (err)->
         console.error (err.stack ? err)
         res
           .status(err.status ? 500)
           .send(err)
-
-  identity = (x)->x
-  transformRequest = (settings, options) -> (req)->
-    tf = settings.searchRequestTransformer ? identity
-    if typeof tf is "function"
-      tf req, settings, options
-    else if typeof tf.transform is "function"
-      tf.transform req, settings, options
-    else
-      throw new Error "No idea how to apply request transformation."
 
   sendResponse = (res)->({data, mimeType, headers={}})->
     res.set header, value for header,value of headers
@@ -160,7 +139,7 @@ module.exports = (settings)->
     es.random options
 
   service.get '/:type/:id' , jsonP( (req)->
-    tf = settings.types[req.params.type].documentTransform
+    tf = settings.types[req.params.type]?.documentTransform
 
     es.fetch(req.params.id,req.params.type).then (body)->
       if tf? and tf.transform? then tf.transform body._source else body._source

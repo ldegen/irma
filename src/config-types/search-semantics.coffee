@@ -11,9 +11,13 @@ ConfigNode = require "../config-node"
 MultiMatchQuery = require "./multi-match-query"
 FilterQuery = require "./filter-query"
 Merger = require "../merger"
-merge = Merger()
+{isArray} = require "util"
+merge = Merger customMerge: (lhs,rhs,pass)->
+  if isArray(lhs) and isArray(rhs) 
+    lhs.concat rhs
+  else pass
 module.exports = class SearchSemantics extends ConfigNode
-  apply: ({query, type:typeName}, settings)->
+  apply: ({query, type:typeName}, settings, attributes)->
     defaultQueryComponents = [
       new MultiMatchQuery()
       new FilterQuery()
@@ -27,7 +31,7 @@ module.exports = class SearchSemantics extends ConfigNode
 
 
     r = queryComponents
-      .map (qc)->qc.create(query,type)
+      .map (qc)->qc.create(query,type, attributes)
       .reduce reducer, (if typeof initialQuery is 'function' then initialQuery(query,type) else initialQuery)
 
     r

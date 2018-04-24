@@ -1,6 +1,6 @@
 describe "The Response Parser", ->
   {fromJS,toJS} = require "immutable"
-  Parser = require "../src/response-parser" 
+  SearchResponseParser = require "../../src/config-types/search-response-parser" 
   settings =
     types:
       foo:
@@ -54,7 +54,8 @@ describe "The Response Parser", ->
     suggest:
       foo: {}
 
-  parse = Parser settings, query:query, type:"foo"
+  parser = new SearchResponseParser 
+  parse = parser.transformResponse {query:query, type:"foo"}, settings
 
   it "passes hits documents verbatim",->
     {hits} = parse respBody

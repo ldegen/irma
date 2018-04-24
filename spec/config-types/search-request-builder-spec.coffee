@@ -1,6 +1,6 @@
 describe "The Request Parser", ->
   merge = require "deepmerge"
-  ConfigNode = require "../src/config-node"
+  ConfigNode = require "../../src/config-node"
   # Actually the name is a bit misleading.
   # What it does is: take the parameters from the url and create components for a
   # ES query expression. Historically, most of this code was in the "ES-Helper", and it 
@@ -9,7 +9,7 @@ describe "The Request Parser", ->
   # This is a bit odd. We will need to watch this.
   #
   # There are different functions for the different parts of the expression.
-  RequestParser = require "../src/request-parser"
+  SearchRequestBuilder = require "../../src/config-types/search-request-builder"
   myType=
     attributes:[
       name: "foo"
@@ -32,9 +32,10 @@ describe "The Request Parser", ->
     #defaultLimit: 42
     #hardLimit: 500
 
-  RP = (overrides={})->(args) ->
+  RP = (overrides={})->(searchRequest) ->
     config = merge settings, overrides
-    RequestParser(config, args)(args)
+    rp = new SearchRequestBuilder()
+    rp.transform(searchRequest, config)()
   
   it "uses the SearchSemantics to create an ES-Query from the request's query string", ->
     rp = RP()
