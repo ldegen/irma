@@ -48,10 +48,10 @@ module.exports = (settings)->
   search: (searchReq0)->
     searchReq = merge searchReq0, index: index
     {body:{explain=false} = {}} = searchReq
-    console.log "searchReq",require("util").inspect searchReq,false, null if debug
+    console.log "searchReq",JSON.stringify searchReq, null , "  " if debug
     client.search(searchReq)
       .then (resp)->
-        console.log "resp", require("util").inspect resp,false,null if debug
+        console.log "resp", JSON.stringify resp, null, "  " if debug
         resp._request = searchReq if explain
         resp._ast = ast if explain
         resp
