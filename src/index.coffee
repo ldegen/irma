@@ -25,3 +25,4 @@ module.exports =
   RequestBuilderSupport: require "./request-builder-support"
   DefaultView: require "./config-types/default-view"
   CsvView: require "./config-types/csv-view"
+  call: require "./call"
