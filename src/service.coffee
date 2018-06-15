@@ -46,6 +46,13 @@ module.exports = (settings)->
   if settings.pretty
     service.set 'json spaces', 2
 
+  if settings.plugins?
+    for plugin in settings.plugins
+      if typeof plugin.install == 'function'
+        plugin.install service
+      else
+        console.error 'function install missing in plugin'
+
   for mountPoint, dir of settings.static
     console.log "mounting #{dir} at #{mountPoint}"
     service.use mountPoint, Express.static dir
@@ -145,12 +152,6 @@ module.exports = (settings)->
       if tf? and tf.transform? then tf.transform body._source else body._source
   )
 
-  if settings.plugins?
-    for plugin in settings.plugins
-      if typeof plugin.install == 'function'
-        plugin.install service
-      else
-        console.error 'function install missing in plugin'
 
   service
 
