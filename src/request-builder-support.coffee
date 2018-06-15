@@ -39,17 +39,18 @@ module.exports.sort = ({query:{sort}={}, type}, settings, SortParser0)->
   sorter.sort()
   
 
-module.exports.aggregations = ({type=settings.defaultType, query:{sort}={}}, settings, attributes0, SortParser0)->
+module.exports.aggregations = (searchRequest, settings, attributes0, SortParser0)->
+  {type=settings.defaultType, query:{sort}={}}=searchRequest
   SortParser = SortParser0 ? settings.SortParser ? require "./sort-parser"
   attributes = attributes0 ? (settings.types[type]?.attributes ? [])
   aggs={}
   for attr in attributes when attr.aggregation?
-    aggs[attr.name] = attr.aggregation()
+    aggs[attr.name] = attr.aggregation(searchRequest, settings, attributes, SortParser)
 
   parse = SortParser settings.types?[type]?.sort ? {}
   sorter = parse(sort)
   if sorter?.aggregation?
-    aggs["_offsets"] = sorter.aggregation()
+    aggs["_offsets"] = sorter.aggregation(searchRequest, settings, attributes, SortParser)
   aggs
 
 
