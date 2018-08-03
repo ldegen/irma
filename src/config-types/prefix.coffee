@@ -5,4 +5,4 @@ module.exports= class Prefix extends Attribute
   filter: (paramString)->
     bool: 
       should: for prefix in paramString.split ','
-        prefix: "#{@_options.field}": prefix.trim()
+        prefix: "#{@field}": prefix.trim()
