@@ -26,7 +26,7 @@ module.exports = (settings)->
 
 
   jsonP = (f)->
-    (req,res)->
+    (req, res, next)->
       success = (obj)->
         res.json obj
       failure = (err)->
@@ -34,12 +34,10 @@ module.exports = (settings)->
         console.error "error",err
         res.status(err.status).send err
       try
-        Promise.resolve(f(req)).done success,failure
+        Promise.resolve(f(req, res, next)).done success,failure
       catch err
         console.error "error",err.stack||err
         res.status(500).send err
-
-
 
   service = Express()
   service.set 'port', settings.port
@@ -97,8 +95,6 @@ module.exports = (settings)->
     res.json
       apiVersion: require("../package.json").version
 
-
-
   service.get '/_irma/analyze', jsonP (req)->
     es.analyze field:req.query.field, text:req.query.q
   service.get '/:type/search', (req, res)->
@@ -135,8 +131,6 @@ module.exports = (settings)->
     else
       res.send data
 
-
-
   service.get '/:type/random', jsonP (req)->
     options =
       seed: req.query.seed ? Math.random()
@@ -145,14 +139,25 @@ module.exports = (settings)->
 
     es.random options
 
-  service.get '/:type/:id' , jsonP( (req)->
+  service.get '/:type/:id' , jsonP( (req, res, next) ->
     tf = settings.types[req.params.type]?.documentTransform
 
-    es.fetch(req.params.id,req.params.type).then (body)->
-      if tf? and tf.transform? then tf.transform body._source else body._source
+    es.fetch req.params.id, req.params.type
+      .then (body) ->
+        if tf? and tf.transform? then tf.transform body._source else body._source
+      .catch (error) ->
+        if settings.notFoundHandlers?
+          next()
+        else
+          console.error error
+          error
   )
 
+  if settings.notFoundHandlers?
+    for handler in settings.notFoundHandlers
+      if typeof handler.install == 'function'
+        handler.install service
+      else
+        console.error 'function install missing in "not found handler"'
 
   service
-
-
