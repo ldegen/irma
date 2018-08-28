@@ -40,3 +40,7 @@ describe "The Query Parser", ->
       ]
       ['TERMS', 'z']
     ]
+
+  it "falls back to trivial tokenizer when a parser exeption is caught", ->
+    expect(parse "foo AND").to.eql ['TERMS', 'foo', 'AND']
+    expect(parse "1) AND NOT bar").to.eql ['TERMS', '1', 'AND', 'NOT', 'bar']
