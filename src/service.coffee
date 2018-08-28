@@ -146,18 +146,18 @@ module.exports = (settings)->
       .then (body) ->
         if tf? and tf.transform? then tf.transform body._source else body._source
       .catch (error) ->
-        if settings.notFoundHandlers?
+        if settings.postPlugins? && error.status == 404
           next()
         else
           console.error error
-          error
+          throw error
   )
 
-  if settings.notFoundHandlers?
-    for handler in settings.notFoundHandlers
+  if settings.postPlugins?
+    for handler in settings.postPlugins
       if typeof handler.install == 'function'
         handler.install service
       else
-        console.error 'function install missing in "not found handler"'
+        console.error 'function install missing in post plugin'
 
   service
