@@ -6,46 +6,66 @@ module.exports = (settings)->
   Promise = require "bluebird"
   merge = require "deepmerge"
 
-  {host, port, keepAlive, index,defaultType,debug} = settings.elasticSearch
+  {host, port, keepAlive, index:defaultIndex,defaultType,debug} = settings.elasticSearch
+
   client = new ElasticSearch.Client
     host: "#{host}:#{port}"
     keepAlive: keepAlive
 
-  index = index
+  allIndices = (typeNames=[])->
+    reducer = (accu, typeName)->
+      index=settings.types[typeName]?.index ? defaultIndex
+      if index in accu then accu else [accu..., index]
 
+    typeNames.reduce(reducer, [])
+
+  # mappings is assumed to be an object of the following form
+  #
+  # typeA: {...mapping for typeA}
+  # typeB: ... etc.
+  #
+  #
   reset: (mappings)->
+    indices = allIndices Object.keys mappings
+
     client.indices.delete
-      index: index
+      index: indices
       ignore: 404
     .then -> client.indices.create
-      index:index
+      index:indices
     .then ->
       Promise.all (
-        for type,body of mappings
+        for typeName,body of mappings
           client.indices.putMapping
-            index:index
-            type:type
+            index: settings.types[typeName]?.index ? defaultIndex
+            type:typeName
             body:body
       )
 
   create: (doc)->
     this.bulkCreate [doc]
+
   bulkCreate: (docs)->
     cmd= (d)->
       index:
-        _type: d.type
-        _id:d.id
+        _type: d.type ? defaultType
+        _id:d.id,
+        _index: settings.types[d.type ? defaultType]?.index ? defaultIndex
     lines =docs.reduce ((p,c)->p.concat [cmd(c),c]), []
     client.bulk
-      index: index
+      index: defaultIndex
       body:lines
       refresh:true
-  fetch: (id, type)->
+
+  fetch: (id, typeName = defaultType)->
     client.get
-      index:index
-      type:type ? defaultType
+      index:settings.types[typeName]?.index ? defaultIndex
+      type:typeName
       id:id
+
   search: (searchReq0)->
+    typeName = searchReq0.type ? defaultType
+    index = settings.types[typeName]?.index ? defaultIndex
     searchReq = merge searchReq0, index: index
     {body:{explain=false} = {}} = searchReq
     console.log "searchReq",JSON.stringify searchReq, null , "  " if debug
@@ -56,19 +76,21 @@ module.exports = (settings)->
         resp._ast = ast if explain
         resp
 
-  analyze: ({field, text})->
+  analyze: ({field, text, type:typeName=defaultType})->
+    index = settings.types[typeName]?.index ? defaultIndex
     client.indices.analyze {index,text,field}
-  random: (options)->
 
+  random: ({type:typeName=defaultType, query, seed=Date.now()})->
+    index = settings.types[typeName]?.index ? defaultIndex
     client.search(
       index:index
-      type: parser.type options
+      type: typeName
       size: 1
       from: 0
       body: query: function_score:
-        query: parser.query options
+        query: query
         functions:[
-          random_score: {}#seed: Date.now()
+          random_score: seed: seed
         ]
     ).then (resp)->
       resp.hits.hits[0]._source

@@ -97,6 +97,7 @@ module.exports = (settings)->
 
   service.get '/_irma/analyze', jsonP (req)->
     es.analyze field:req.query.field, text:req.query.q
+
   service.get '/:type/search', (req, res)->
     viewName = req.query.view
     typeName = req.params.type
