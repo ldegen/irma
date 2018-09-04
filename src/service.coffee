@@ -47,7 +47,7 @@ module.exports = (settings)->
   if settings.plugins?
     for plugin in settings.plugins
       if typeof plugin.install == 'function'
-        plugin.install service
+        plugin.install service, settings
       else
         console.error 'function install missing in plugin'
 
@@ -157,7 +157,7 @@ module.exports = (settings)->
   if settings.postPlugins?
     for handler in settings.postPlugins
       if typeof handler.install == 'function'
-        handler.install service
+        handler.install service, settings
       else
         console.error 'function install missing in post plugin'
 

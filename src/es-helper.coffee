@@ -24,7 +24,7 @@ module.exports = (settings)->
   # typeA: {...mapping for typeA}
   # typeB: ... etc.
   #
-  #
+
   reset: (mappings)->
     indices = allIndices Object.keys mappings
 
@@ -94,3 +94,4 @@ module.exports = (settings)->
         ]
     ).then (resp)->
       resp.hits.hits[0]._source
+  client: client
