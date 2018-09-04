@@ -9,6 +9,8 @@
   },
   "man": "man/irma.1",
   "scripts": {
+    "cucumber": "cucumber-js --snippet-syntax node_modules/cucumber-snippets-coffee-script --tags '(not @todo) and (not @obsolet) and (not @knownIssue)' features/",
+    "cucumber-wip": "cucumber-js --snippet-syntax node_modules/cucumber-snippets-coffee-script --tags @wip features/",
     "pegjs": "pegjs src/query-parser.pegjs lib/query-parser.pegjs",
     "manpage": "mkdir -p man && coffee src/main.coffee -m > man/irma.1",
     "prepublish": "coffee --compile --output lib src && npm run pegjs && npm run diagram && npm run manpage && node mark-deps-bundled.js",
@@ -30,11 +32,14 @@
   },
   "homepage": "https://github.com/ldegen/irma#readme",
   "devDependencies": {
+    "agg": "^0.6.0",
     "chai": "^2.2.0",
     "chai-as-promised": "^4.3.0",
     "coffee-script": "^1.9.0",
     "coffeelint": "^1.16.0",
     "csv-stringify": "0.0.8",
+    "cucumber": "^4.2.1",
+    "cucumber-snippets-coffee-script": "^1.0.0",
     "frisby": "^0.8.3",
     "grammkit": "^0.3.1",
     "lorem-ipsum": "^1.0.1",
@@ -43,7 +48,9 @@
     "mocha-jenkins-reporter": "^0.1.6",
     "pegjs": "^0.9.0",
     "rimraf": "^2.5.4",
-    "rosie": "^0.4.1"
+    "rosie": "^0.4.1",
+    "tbob": "^0.12.0",
+    "tmp-promise": "^1.0.5"
   },
   "dependencies": {
     "JSONStream": "^1.0.4",
