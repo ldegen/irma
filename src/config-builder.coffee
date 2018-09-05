@@ -15,11 +15,32 @@ loadConfigTypes = (dirs)->
     .reduce ((a,b)->merge a,b), {}
 
 merge = Merge customMerge: (lhs, rhs, pass)->
+  # Since we will be dealing with config nodes a lot, we define 
+  # sepcial merging behaviour 
   if rhs instanceof ConfigNode
-    if rhs.merge? then rhs.merge(lhs, merge) else rhs
+    #console.log "merge: rhs is ConfigNode", rhs.constructor.name
+    #console.log "merge: lhs is instance of", lhs?.constructor?.name
+    # Custom ConfigNodes can always override the merging behaviour
+    if rhs.merge?
+      #console.log "merge: rhs defines custom merge strategy"
+      rhs.merge(lhs, merge)
+
+    # otherwise, if both are ConfigNodes and if rhs is a specialization of lhs
+    else if lhs? and lhs instanceof ConfigNode and rhs instanceof lhs.constructor
+      # then we should be able to merge both nodes by merging their options.
+      #console.log "merge: rhs specializes lhs"
+      mergedOpts = merge lhs._options, rhs._options
+      #console.log "mergedOpts", mergedOpts
+      new rhs.constructor mergedOpts
+
+    else
+      # Otherwise don't try anything fancy, stick with rhs.
+      rhs
   else
+    # stick with the default behaviour for non-ConfigNode data
+    # For most non-trivial cases this means: rhs wins, lhs is discarded.
     pass
-  
+
 
 resolveStaticPaths = ( obj)->
   throw new Error("häh?"+obj) if typeof obj isnt "object"
