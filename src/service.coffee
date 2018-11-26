@@ -134,10 +134,9 @@ module.exports = (settings)->
 
   service.get '/:type/random', jsonP (req)->
     options =
-      seed: req.query.seed ? Math.random()
+      seed: req.query.seed ? Date.now()
       query: req.query
       type: req.params.type
-
     es.random options
 
   service.get '/:type/:id' , jsonP( (req, res, next) ->
