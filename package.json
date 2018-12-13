@@ -64,7 +64,7 @@
     "immutable": "^3.8.1",
     "js-yaml": "^3.7.0",
     "minimist": "^1.1.1",
-    "morgan": "^1.5.0",
+    "morgan": "^1.9.1",
     "promise-ops": "^0.5.0",
     "request": "^2.51.0",
     "sigmatch": "^0.9.0",
