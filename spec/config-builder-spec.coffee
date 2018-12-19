@@ -22,14 +22,14 @@ describe "The ConfigBuilder", ->
         """
 
   it "builds configuration objects", ->
-    expect(ConfigBuilder().build()).to.eql defaults
+    expect(ConfigBuilder().build()._options).to.eql defaults
 
   it "can load yaml config files", ->
     expect(
       ConfigBuilder()
         .tryLoad fileB
         .load fileA
-        .build()
+        .build()._options
     ).to.eql merge defaults, port: 4242, __files:[fileA]
 
   describe "when adding options", ->
@@ -66,7 +66,7 @@ describe "The ConfigBuilder", ->
         ConfigBuilder()
           .add __env:HOME:tmpDir
           .load ["HOME"], (HOME)->path.join HOME,"fileA.yaml"
-          .build()
+          .build()._options
       ).to.eql merge defaults,
         port: 4242,
         __files:[fileA]
@@ -78,7 +78,7 @@ describe "The ConfigBuilder", ->
         ConfigBuilder()
           .add __env:HOME:tmpDir
           .load (HOME)->path.join HOME,"fileA.yaml"
-          .build()
+          .build()._options
       ).to.eql merge defaults,
         port: 4242,
         __files:[fileA]

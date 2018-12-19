@@ -9,6 +9,7 @@ bulk = require "bulk-require"
 sigmatch = require "sigmatch"
 LoadYaml = require "./load-yaml"
 ConfigNode = require "./config-node"
+Root = require "./root-node"
 loadConfigTypes = (dirs)->
   dirs
     .map (dir)-> bulk dir, '*'
@@ -135,7 +136,7 @@ wrap = (cfg=defaults, action=identity)->
     wrap m._cfg, (env, finalCfg, argv0)->
       Promise.resolve action env, finalCfg, argv0
         .then (argv1)->m.action env, finalCfg, argv1
-  build = ()->cfg
+  build = ()->new Root cfg
   run= (env,argv)->
     action env,build() ,argv
 

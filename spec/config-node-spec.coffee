@@ -19,24 +19,20 @@ describe "A Config Node", ->
       foo: foo
       bar: baz: baz
 
-    root._init()
 
     expect(root._options.bar.baz.depValues).to.eql foo: foo
 
   it "cannot depend on ancestor", ->
     foo = new DependentNode dependencies: barf: ['/']
-    root = new RootNode
-      foo: foo
 
-    mistake = -> root._init()
+    mistake = -> new RootNode foo: foo
     expect(mistake).to.throw()
 
   it "detects complexer dependency cycles", ->
-    root = new RootNode
-      foo: new DependentNode dependencies: baz: ['..','bar', 'baz']
-      bar: baz: new DependentNode dependencies: foo: ['/','foo']
-
-    mistake = -> root._init()
+    mistake = ->
+      new RootNode
+        foo: new DependentNode dependencies: baz: ['..','bar', 'baz']
+        bar: baz: new DependentNode dependencies: foo: ['/','foo']
     expect(mistake).to.throw()
 
   describe "Path expressions", ->

@@ -37,7 +37,7 @@ describe "The Command Line Interface", ->
       Server: (settings)->
         me = servers.length
         servers.push me
-        trace.push ['Server', me, settings]
+        trace.push ['Server', me, settings._options]
         start: ->
           trace.push ["Server", me, 'start']
           Promise.resolve settings
@@ -75,7 +75,7 @@ describe "The Command Line Interface", ->
         .bind cli()
         .run mocks
     ).to.be.fulfilled.then (outcome)->
-      expect(outcome).to.eql defaults
+      expect(outcome._options).to.eql defaults
       expect(trace).to.eql [
         ['Server', 0, defaults]
         ['Server', 0, 'start']
@@ -107,7 +107,7 @@ describe "The Command Line Interface", ->
         .bind cli "-T", typeDir1, "-T", typeDir2
         .run mocks
     ).to.be.fulfilled.then (outcome)->
-      expect(outcome).to.eql merge defaults,
+      expect(outcome._options).to.eql merge defaults,
         __types:
           foo: foo1
           bar: bar1
@@ -117,7 +117,7 @@ describe "The Command Line Interface", ->
           typeDir1
         ]
       expect(trace).to.eql [
-        ['Server', 0, outcome]
+        ['Server', 0, outcome._options]
         ['Server', 0, 'start']
       ]
 
@@ -127,7 +127,7 @@ describe "The Command Line Interface", ->
         .bind cli "--es-host", "neenee.gibtsni.ch:1234", "--es-index", "fum", "--listen", "192.168.1.2:42", configFile1, configFile2
         .run mocks
     ).to.be.fulfilled.then (outcome)->
-      expect(outcome).to.eql merge defaults,
+      expect(outcome._options).to.eql merge defaults,
         __files: [configFile2, configFile1]
         host: "192.168.1.2"
         port: 42
@@ -140,6 +140,6 @@ describe "The Command Line Interface", ->
           port: 1234
           index: "fum"
       expect(trace).to.eql [
-        ['Server', 0, outcome]
+        ['Server', 0, outcome._options]
         ['Server', 0, 'start']
       ]
