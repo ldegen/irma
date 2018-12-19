@@ -7,9 +7,8 @@ SearchResponseParser = require "./config-types/search-response-parser"
 Pipeline = require "./config-types/pipeline"
 Switch = require "./config-types/switch"
 module.exports =
-  searchRequestFilter:
-    new SearchRequestBuilder
-      searchSemantics: new SearchSemantics
+  searchSemantics: new SearchSemantics
+  searchRequestFilter: new SearchRequestBuilder
   
   searchResponseFilter:  
     new Pipeline

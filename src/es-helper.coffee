@@ -6,7 +6,13 @@ module.exports = (settings)->
   Promise = require "bluebird"
   merge = require "deepmerge"
 
-  {host, port, keepAlive, index:defaultIndex,defaultType,debug} = settings.elasticSearch
+  {host, port, keepAlive, index:defaultIndex,defaultType} = settings.elasticSearch
+
+  debug = (key, msg)->
+    debugSettings = settings.elasticSearch.debug
+    if (debugSettings is true) or (typeof debugSettings is "object") and debugSettings?[key]
+      console.log key, msg
+
 
   client = new ElasticSearch.Client
     host: "#{host}:#{port}"
@@ -68,10 +74,10 @@ module.exports = (settings)->
     index = settings.types[typeName]?.index ? defaultIndex
     searchReq = merge searchReq0, index: index
     {body:{explain=false} = {}} = searchReq
-    console.log "searchReq",JSON.stringify searchReq, null , "  " if debug
+    debug "searchReq", JSON.stringify searchReq, null , "  "
     client.search(searchReq)
       .then (resp)->
-        console.log "resp", JSON.stringify resp, null, "  " if debug
+        debug "resp", JSON.stringify resp, null, "  "
         resp._request = searchReq if explain
         resp._ast = ast if explain
         resp

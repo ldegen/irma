@@ -94,6 +94,7 @@
     "promise-ops",
     "request",
     "sigmatch",
+    "toposort",
     "yargs"
   ]
 }

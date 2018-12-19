@@ -58,8 +58,8 @@ initTree = (root)->
 
   for key in sortedKeys
     {node, path, deps} = lookup[key] ? {}
-    if not node? 
-      console.error "Warning: no node for path "+key
+    #if not node? 
+    #  console.error "Warning: no node for path "+key
     if node? and node instanceof ConfigNode
       depvals = {}
       depvals[alias]=lookup[depPath]?.node for alias,depPath of deps
