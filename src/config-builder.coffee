@@ -45,7 +45,7 @@ merge = Merge customMerge: (lhs, rhs, pass)->
 
 resolveStaticPaths = ( obj)->
   throw new Error("häh?"+obj) if typeof obj isnt "object"
-  return null unless obj?
+  return undefined unless obj?
   dir = obj.__dirname ? if obj.__filename? then path.dirname obj.__filename
   return obj unless dir?
 
@@ -67,7 +67,9 @@ resolve = ({file, required, content, configTypes={}})->
       content = loadYaml file
       if content?
         merge content, __filename:file, __dirname:path.dirname file
-      else null
+      else 
+        #console.log "no content?", file
+        null
   else
     content
 
@@ -94,7 +96,7 @@ load_ = ({required=true, envVars=[], constructFileName})->
       file:file
       required:required
       configTypes: cfg.__types
-      content:null
+      content:undefined
 
     if envVars.length >0
       unit mergeConfigs cfg, newContent, __usedEnvVars:envVars

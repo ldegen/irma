@@ -7,7 +7,7 @@ Automist = require "automist"
 {unit, add, load, wrap} = ConfigBuilder = require "./config-builder"
 {isArray} = require "util"
 
-require "coffee-script/register"
+require "coffeescript/register"
 module.exports = (args...)->
 
   toCamelCase = (x)->

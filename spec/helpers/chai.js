@@ -13,7 +13,6 @@ global.AssertionError = chai.AssertionError;
 global.Assertion = chai.Assertion;
 global.assert = chai.assert;
 
-global.Factory = require("./factory");
 
 global.Source = function(chunks,opts0){
   var opts = opts0 || {
