@@ -1,7 +1,7 @@
 
 module.exports =(thing, methods = ['apply', 'transform'])->(args...)->
   if typeof thing is "function"
-    return thing args...
+    return thing.apply(null, args)
   else if typeof thing is 'object'
     for method in methods when typeof thing[method] is 'function'
       return thing[method] args...

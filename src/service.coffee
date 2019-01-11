@@ -113,7 +113,6 @@ module.exports = (settings)->
     identity = ()->(x)->(x)
     requestFilter = type.searchRequestFilter ? settings.searchRequestFilter ? identity
     responseFilter = type.searchResponseFilter ? settings.searchResponseFilter ? identity
-
     Promise.resolve searchRequest
       .then call(requestFilter) searchRequest, settings
       .then es.search

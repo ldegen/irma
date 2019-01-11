@@ -3,7 +3,7 @@ Yaml = require "js-yaml"
 bulk = require "bulk-require"
 path = require "path"
 fs = require "fs"
-coffee = require "coffee-script"
+coffee = require "coffeescript"
 
 module.exports = (additionalTypes={}, ignoreMissing=false)->
   ConfigTypes = bulk (path.resolve __dirname, 'config-types'), '*'

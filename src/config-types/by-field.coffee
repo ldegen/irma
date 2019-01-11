@@ -3,8 +3,8 @@ module.exports = class ByField extends ConfigNode
 
 
   constructor: (options, direction) ->
-    @directionString = direction ? 'asc'
     super options
+    @directionString = direction ? 'asc'
 
     if options.prefixField?
       @aggregation = ()->
