@@ -51,9 +51,14 @@ module.exports = (settings)->
       else
         console.error 'function install missing in plugin'
 
-  for mountPoint, dir of settings.static
-    console.log "mounting #{dir} at #{mountPoint}"
-    service.use mountPoint, Express.static dir
+  for mountPoint, spec of settings.static
+    if typeof spec == "string"
+      console.log "mounting #{spec} at #{mountPoint}"
+      service.use mountPoint, Express.static spec
+    if typeof spec == "object"
+      for mP in spec
+        console.log "mounting #{mP} at #{mountPoint}"
+        service.use mountPoint, Express.static mP
 
   for mountPoint, {host, augment, https, preserveHostHdr} of settings.proxy
     console.log "forwarding #{mountPoint} to #{host}"

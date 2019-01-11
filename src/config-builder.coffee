@@ -47,12 +47,17 @@ resolveStaticPaths = ( obj)->
   throw new Error("häh?"+obj) if typeof obj isnt "object"
   return null unless obj?
   dir = obj.__dirname ? if obj.__filename? then path.dirname obj.__filename
+  console.log 'obj',obj
   return obj unless dir?
 
   replaceEntries = (blockName)->
     if obj[blockName]?
       tmp = {}
-      tmp[key] = path.resolve dir, value for key, value of (obj[blockName] ? {})
+      for key, value of (obj[blockName] ? {})
+        if typeof value == "string"
+          tmp[key] = path.resolve dir, value
+        if typeof value == "object"
+          tmp[key] = value.map (v) -> path.resolve dir, v
       obj[blockName] = tmp
   replaceEntries blockName for blockName in ['static', 'dynamic']
 
