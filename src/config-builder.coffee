@@ -47,7 +47,6 @@ resolveStaticPaths = ( obj)->
   throw new Error("häh?"+obj) if typeof obj isnt "object"
   return undefined unless obj?
   dir = obj.__dirname ? if obj.__filename? then path.dirname obj.__filename
-  console.log 'obj',obj
   return obj unless dir?
 
   replaceEntries = (blockName)->
