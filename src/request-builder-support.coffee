@@ -65,11 +65,11 @@ semantics = module.exports.semantics = (searchRequest, settings, semantics0)->
 
 module.exports.ast = (searchRequest, settings, semantics0) ->
   searchSemantics = semantics(searchRequest, settings, semantics0)
-  if module.exports.explain then searchSemantics.apply(searchRequest, settings).ast else null
+  if module.exports.explain(searchRequest) then searchSemantics.apply(searchRequest, settings).ast else null
 
 module.exports.fielddataFields = (searchRequest, settings, attributes, semantics0) ->
   searchSemantics = semantics(searchRequest, settings, semantics0)
-  if module.exports.explain then searchSemantics.apply(searchRequest, settings, attributes).fields else []
+  if module.exports.explain(searchRequest) then searchSemantics.apply(searchRequest, settings, attributes).fields
 
 module.exports.query = (searchRequest, settings, attributes, semantics0) ->
   searchSemantics = semantics(searchRequest, settings, semantics0)
