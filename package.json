@@ -11,7 +11,7 @@
   "scripts": {
     "pegjs": "pegjs src/query-parser.pegjs lib/query-parser.pegjs",
     "manpage": "mkdir -p man && coffee src/main.coffee -m > man/irma.1",
-    "prepublish": "coffee --compile --output lib src && npm run pegjs && npm run diagram && npm run manpage && node mark-deps-bundled.js",
+    "prepublish": "rm -rf lib && mkdir lib && coffee --compile --output lib src && npm run pegjs && npm run diagram && npm run manpage && node mark-deps-bundled.js",
     "test": "mocha --recursive --require spec/helpers/chai.js --require coffeescript/register \"spec/**/*.{js,coffee}\"",
     "test-watch": "mocha --recursive -b -R nyan -w --watch-extensions  js,coffee --require spec/helpers/chai.js --require coffeescript/register \"spec/**/*.{js,coffee}\"",
     "server": "coffee src/cli.coffee",

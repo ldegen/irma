@@ -4,7 +4,6 @@ module.exports = (settings)->
   ESHelper = require "./es-helper"
   Express = require "express"
   SearchRequestBuilder = require "./config-types/search-request-builder"
-  ResponseParser = require "./response-parser"
   morgan = require "morgan"
   proxy = require "express-http-proxy"
   errorHandler = require "errorhandler"
