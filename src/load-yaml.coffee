@@ -21,7 +21,12 @@ module.exports = (additionalTypes={}, ignoreMissing=false)->
   yamlTypes.push new Yaml.Type '!coffee',
     kind: 'scalar'
     construct: (sourceCode)->
-      coffee.eval sourceCode, sandbox:require './sandbox'
+      # note that we do *NOT* want sandboxing here. For once, it does not add any
+      # security (if the config is compromised, basically all is lost anyway).
+      # Also, using a sandbox will create separate definitions of global constructors
+      # like e.g. Object, which in turn creates problems when checking things like
+      # foobar instanceof Object.
+      coffee.eval sourceCode #, sandbox:require './sandbox'
 
 
   SCHEMA = Yaml.Schema.create Yaml.DEFAULT_SCHEMA, yamlTypes
