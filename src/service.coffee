@@ -1,7 +1,6 @@
 module.exports = (settings)->
   Promise = require "bluebird"
   Path = require "path"
-  ESHelper = require "./es-helper"
   Express = require "express"
   SearchRequestBuilder = require "./config-types/search-request-builder"
   morgan = require "morgan"
@@ -12,7 +11,8 @@ module.exports = (settings)->
 
   bulk = require "bulk-require"
   parseQuery = require("./query-parser").parse
-  es = ESHelper(settings)
+  es = settings.elasticSearch
+
   P = (handler)->(req,res)->
     Promise
       .resolve handler req
@@ -100,7 +100,7 @@ module.exports = (settings)->
       apiVersion: require("../package.json").version
 
   service.get '/_irma/analyze', jsonP (req)->
-    es.analyze field:req.query.field, text:req.query.q
+    es.analyze(req, settings) field:req.query.field, text:req.query.q
 
   service.get '/:type/search', (req, res)->
     viewName = req.query.view
@@ -114,7 +114,8 @@ module.exports = (settings)->
     responseFilter = type.searchResponseFilter ? settings.searchResponseFilter ? identity
     Promise.resolve searchRequest
       .then call(requestFilter) searchRequest, settings
-      .then es.search
+      #.then es.search
+      .then es.search searchRequest, settings
       .then call(responseFilter) searchRequest, settings
       .then sendResponse res
       .catch (err)->
@@ -140,12 +141,12 @@ module.exports = (settings)->
       seed: req.query.seed ? Date.now()
       query: req.query
       type: req.params.type
-    es.random options
+    es.random(req, settings) options
 
   service.get '/:type/:id' , jsonP( (req, res, next) ->
     tf = settings.types[req.params.type]?.documentTransform
 
-    es.fetch req.params.id, req.params.type
+    es.get(req,settings) id: req.params.id, typeName:req.params.type
       .then (body) ->
         if tf? and tf.transform? then tf.transform body._source else body._source
       .catch (error) ->
