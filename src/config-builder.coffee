@@ -15,9 +15,29 @@ loadConfigTypes = (dirs)->
     .map (dir)-> bulk dir, '*'
     .reduce ((a,b)->merge a,b), {}
 
-merge = Merge customMerge: (lhs, rhs, pass)->
-  # Since we will be dealing with config nodes a lot, we define 
-  # sepcial merging behaviour 
+merge = Merge customMerge: (lhs, rhs0, pass)->
+  # Since we will be dealing with config nodes a lot, we define
+  # sepcial merging behaviour
+
+
+  # if lhs is a config node and rhs is a plain object, instead pretend that rhs
+  # is a config node of the same type as lhs.  Rational: It is rather unlikely
+  # that an application would want to override a custom node with a plain
+  # object. Otoh, wanting to override some *options* of said custom node is a
+  # very frequently encountered problem.  Note that in the unlikely case that
+  # you *really* want to override a custom config node with a plain object, you
+  # can do this explicitly: ironically, you would have to create a custom node
+  # with a custom merge method that returns a plain object.
+
+  rhs = if lhs? and lhs instanceof ConfigNode and rhs0?.constructor is Object
+    new lhs.constructor rhs0
+  else
+    rhs0
+
+  # now, if rhs is a ConfigNode, we allow for some special merging magic.
+  # In particular, we allow custom node types to define their own merging
+  # behaviour
+
   if rhs instanceof ConfigNode
     #console.log "merge: rhs is ConfigNode", rhs.constructor.name
     #console.log "merge: lhs is instance of", lhs?.constructor?.name
@@ -26,16 +46,17 @@ merge = Merge customMerge: (lhs, rhs, pass)->
       #console.log "merge: rhs defines custom merge strategy"
       rhs.merge(lhs, merge)
 
-    # otherwise, if both are ConfigNodes and if rhs is a specialization of lhs
+    # If no explicit merge behaviour is defined by rhs, but if the type of rhs
+    # is the same or a specialization of the lhs type then we should be able to
+    # merge both nodes by merging their options.
     else if lhs? and lhs instanceof ConfigNode and rhs instanceof lhs.constructor
-      # then we should be able to merge both nodes by merging their options.
       #console.log "merge: rhs specializes lhs"
       mergedOpts = merge lhs._options, rhs._options
       #console.log "mergedOpts", mergedOpts
       new rhs.constructor mergedOpts
 
+    # Otherwise don't try anything fancy, stick with rhs. 
     else
-      # Otherwise don't try anything fancy, stick with rhs.
       rhs
   else
     # stick with the default behaviour for non-ConfigNode data

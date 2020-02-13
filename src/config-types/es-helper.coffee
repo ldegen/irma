@@ -8,7 +8,10 @@ merge = require "deepmerge"
 
 module.exports = class EsAdapter extends ConfigNode
 
-  init: (_)->
+  #FIXME: remove this dependency, we only need it to provide legacy api
+  dependencies: -> types: ["/", "types"]
+
+  init: ({types})->
 
     {debug: debugSettings, host, port, keepAlive, index:defaultIndex,defaultType} = @_options
 
@@ -27,6 +30,31 @@ module.exports = class EsAdapter extends ConfigNode
         type:typeName
         id:id
       client.get body
+    
+    legacyFetch = (id, typeName) -> @get(null, {types})({id, typeName})
+    
+    Object.defineProperty this, "fetch",
+      writeable: true
+      configurable: true
+      enumerable: true
+      get: ->
+        console.warn """
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+          WARNING: es-helper.fetch(id, typeName) is deprecated and *will be removed*.
+
+          You should use es-helper.get(request,settings)({id, typeName}) instead.
+          Alternatively, you can use the build-in plugin `legacy-fetch` which will
+          provide the legacy API.
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        """
+        delete @fetch
+        @fetch = legacyFetch
+        @fetch
+      set: (customFetch)->
+        delete @fetch
+        @fetch = customFetch
 
     @search = (req, settings) -> (searchReq0)->
       typeName = searchReq0.type ? defaultType
