@@ -7,8 +7,10 @@ SearchResponseParser = require "./config-types/search-response-parser"
 Pipeline = require "./config-types/pipeline"
 Switch = require "./config-types/switch"
 EsAdapter = require "./config-types/es-helper"
+Io = require "./config-types/io"
 
 module.exports =
+  io: new Io
   elasticSearch: new EsAdapter
     defaultType: 'project'
     index: 'app-test'

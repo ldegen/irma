@@ -8,11 +8,14 @@ merge = require "deepmerge"
 
 module.exports = class EsAdapter extends ConfigNode
 
-  #FIXME: remove this dependency, we only need it to provide legacy api
-  dependencies: -> types: ["/", "types"]
+  dependencies: ->
+    io: ["/","io"]
+    #FIXME: remove this dependency, we only need it to provide legacy api
+    types: ["/", "types"]
 
-  init: ({types})->
+  init: ({types, io})->
 
+    {console} = io
     {debug: debugSettings, host, port, keepAlive, index:defaultIndex,defaultType} = @_options
 
     debug = (key, msg)->

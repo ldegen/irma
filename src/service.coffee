@@ -12,6 +12,7 @@ module.exports = (settings)->
   bulk = require "bulk-require"
   parseQuery = require("./query-parser").parse
   es = settings.elasticSearch
+  {stdout,stderr, console} = settings.io
 
   P = (handler)->(req,res)->
     Promise
@@ -93,8 +94,8 @@ module.exports = (settings)->
   for mountPoint, mod of settings.dynamic
     service.get mountPoint, require(mod)
   service.use '/_irma', Express.static( Path.join(__dirname, '..', 'static'))
-  service.use morgan('dev')
-  service.use errorHandler()
+  service.use morgan('dev', stream:settings.io.stdout)
+  service.use errorHandler log: (err,str,req)->settings.io.console.error str
   service.get '/_irma', (req,res)->
     res.json
       apiVersion: require("../package.json").version

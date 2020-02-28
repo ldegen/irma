@@ -1,8 +1,11 @@
 describe "The Command Line Interface", ->
+  Io = require "../src/config-types/io"
   LoadYaml = require "../src/load-yaml"
   cli = require "../src/cli"
   {unit} = require "../src/config-builder"
-  defaults = by:"default"
+  io = undefined
+  defaults =
+    by:"default"
   path = require "path"
   Promise = require "bluebird"
   mkdir = Promise.promisify require "mkdirp"
@@ -15,7 +18,7 @@ describe "The Command Line Interface", ->
   servers = undefined
   foo1 = bar1= bar2= baz2=undefined
   merge = require "deepmerge"
-  endStreams = ({stdout, stderr})->stream.end() for stream in [stdout, stderr]
+  endStreams = (_,{io:{stdout, stderr}})->stream.end() for stream in [stdout, stderr]
   tmpDir = typeDir1 = typeDir2 = configFile1= configFile2 = undefined
   capitalize = (x)->x.replace /^(\w)/g, (_,c)->c.toUpperCase()
   toCamelCase = (x)->x.replace /\W+(\w)/g, (_,c)->c.toUpperCase()
@@ -31,9 +34,9 @@ describe "The Command Line Interface", ->
 
     trace = []
     servers = []
+    io = new Io stderr: Sink(), stdout: Sink()
+    defaults.io = io
     mocks=
-      stderr: Sink()
-      stdout: Sink()
       Server: (settings)->
         me = servers.length
         servers.push me
@@ -89,7 +92,7 @@ describe "The Command Line Interface", ->
         .run mocks
     ).to.be.fulfilled.then (outcome)->
       expect(trace).to.eql []
-      expect(mocks.stderr.promise).to.eventually.eql [Automist(readme).help()]
+      expect(io.stderr.promise).to.eventually.eql [Automist(readme).help()]
 
   it "can produce manpage", ->
     expect(
@@ -99,7 +102,7 @@ describe "The Command Line Interface", ->
         .run mocks
     ).to.be.fulfilled.then (outcome)->
       expect(trace).to.eql []
-      expect(mocks.stdout.promise).to.eventually.eql [Automist(readme).manpage()]
+      expect(io.stdout.promise).to.eventually.eql [Automist(readme).manpage()]
 
   it "can add directories to search for config types", ->
     expect(
