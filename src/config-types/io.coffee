@@ -32,9 +32,17 @@ module.exports = class Io extends ConfigNode
     @ignoreErrors = @_options.ignoreErrors ? true
     @colorMode = @_options.colorMode ? 'auto'
     @inspectOptions = @_options.inspectOptions ? {}
-    @console = new Console
-      stdout: @stdout
-      stderr: @stderr
-      ignoreErrors: @ignoreErrors
-      colorMode: @colorMode
-      inspectOptions: @inspectOptions
+
+    # this is only supported in node > 10.x
+
+    #@console = new Console
+    #  stdout: @stdout
+    #  stderr: @stderr
+    #  ignoreErrors: @ignoreErrors
+    #  colorMode: @colorMode
+    #  inspectOptions: @inspectOptions
+
+    # this should work on older and newer versions, although the third argument
+    # will be ignored for versions earlier then 10.
+
+    @console = new Console @stdout, @stderr, @ignoreErrors
