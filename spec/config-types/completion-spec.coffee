@@ -6,12 +6,13 @@ describe "A Completion", ->
   c=undefined
   beforeEach ->
     c = new Completion field:"blah"
+    c.init()
 
   it "complains if you try to instantiate it without `new`", ->
     mistake = -> c = Completion field:"blah"
     expect(mistake).to.throw /new/
   it "is a special kind of Suggestion", ->
-   expect(c).to.be.an.instanceof Suggest
+    expect(c).to.be.an.instanceof Suggest
 
   it "knows how to ask ES for suggestions", ->
     expect(c.build q:"onkel").to.eql
@@ -20,7 +21,7 @@ describe "A Completion", ->
 
   it "knows how to transform suggestions returned by ES", ->
     #TODO: identity for now -- do we need something else?
-    input = 
+    input =
       text: "lari"
       offset: 42
       length: 4

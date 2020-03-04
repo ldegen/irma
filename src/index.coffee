@@ -14,6 +14,8 @@ module.exports =
   SearchRequestBuilder: require "./config-types/search-request-builder"
   SearchResponseParser: require "./config-types/search-response-parser"
   Switch: require "./config-types/switch"
+  Suggest: require "./config-types/suggest"
+  Completion: require "./config-types/completion"
   Pipeline: require "./config-types/pipeline"
   ConfigBuilder: require  "./config-builder"
   Cli: require "./cli"

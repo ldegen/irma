@@ -24,11 +24,12 @@ module.exports.highlightFields = (searchRequest, settings, attributes0)->
     hlFields[attr.field] = attr.highlight()
   hlFields
 
-module.exports.suggest = ({query, type}, settings, suggestions0)->
+module.exports.suggest = (request, settings, suggestions0)->
+  {query, type} = request
   suggestions = (suggestions0 ? settings?.types?[type]?.suggestions ? [])
   result = {}
   for suggestion in suggestions
-    s = suggestion.build query
+    s = suggestion.build query, request, settings
     result[suggestion.name] = s if s?
   result
 

@@ -5,7 +5,7 @@ normalizePath = (segments)->
   result = []
   for segment in segments
     switch segment
-      when '/' 
+      when '/'
         result = []
       when '.'
         result = result
@@ -58,7 +58,7 @@ initTree = (root)->
 
   for key in sortedKeys
     {node, path, deps} = lookup[key] ? {}
-    #if not node? 
+    #if not node?
     #  console.error "Warning: no node for path "+key
     if node? and node instanceof ConfigNode
       depvals = {}

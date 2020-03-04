@@ -1,8 +1,9 @@
-module.exports.facetCounts = ({type}, settings, attributes0)->({aggregations})->
+module.exports.facetCounts = (request, settings, attributes0)->({aggregations})->
+  {type}=request
   attributes = attributes0 ? settings.types[type]?.attributes ? []
   reducer = (counts, attr)->
     if attr.interpreteAggResult? and aggregations?[attr.name]?
-      counts[attr.name] = attr.interpreteAggResult(aggregations[attr.name])
+      counts[attr.name] = attr.interpreteAggResult(aggregations[attr.name], request, settings)
     counts
 
   attributes.reduce reducer, {}
@@ -19,9 +20,9 @@ module.exports.sections = ({type, query={}}, settings, SortParser0)->({aggregati
 module.exports.suggestions = (searchRequest, settings, suggestions0)->({suggest})->
   suggestions = suggestions0 ? settings.types[searchRequest.type]?.suggestions ? []
   reducer = (suggs, suggestor)->
-    input = suggest[suggestor.name]
+    input = suggest?[suggestor.name]
     if input?
-      v = if suggestor.transform? then suggestor.transform input else input
+      v = if suggestor.transform? then suggestor.transform(input,searchRequest, settings) else input
       suggs[suggestor.name] = v
     suggs
   suggestions.reduce reducer, {}
