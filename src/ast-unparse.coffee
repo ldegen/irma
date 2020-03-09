@@ -23,8 +23,8 @@ priorities=
   SHOULD:2
   NOT:3
   AND:4
-  OR:5
-  SEQ:6 #TODO: not sure about this
+  SEQ:5
+  OR:6
 
 escapeDQ = (s)->
   s
@@ -44,7 +44,7 @@ par =(op, term)->
     [head] = term
     parent = priorities[op]
     child = priorities[head]
-    if not parent? or not child? or parent < child
+    if not parent? or not child? or parent <= child
       "("+unparse(term)+")"
     else
       unparse term
