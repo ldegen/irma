@@ -13,6 +13,8 @@
   SQUOT
 } = require "../src/ast-helper.coffee"
 
+DEFAULT="DEFAULT"
+
 priorities=
   TERM:0
   DQUOT:0
@@ -21,6 +23,7 @@ priorities=
   MUST:2
   MUST_NOT:2
   SHOULD:2
+  DEFAULT:2
   NOT:3
   AND:4
   SEQ:5
@@ -71,6 +74,7 @@ unparse = (ast)->
     when NOT then "NOT "+par(NOT, first)
     when DQUOT then "\"" + escapeDQ(first) + "\""
     when SQUOT then "'" + escapeSQ(first) + "'"
+    when DEFAULT then "!"+par DEFAULT, first
     else
       throw new Error "cannot unparse op #{head}"
 

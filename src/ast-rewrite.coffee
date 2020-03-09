@@ -88,6 +88,7 @@ bottomup = (rewrite)->
       {cx:cx0, value:t0}
     # if it is an array, but not a propper term, we assume an array of terms
     else if not isTerm(t0)
+      console.log "t0", t0
       throw new Error "FIXME: i think this should not happen?"
     else
       # first we hae to process the argument terms
@@ -106,7 +107,7 @@ ruleBased = (opts)->
 
   normalizeRule = (rule)->
     if typeof rule is "function"
-      return rule
+      return [rule]
     unless Array.isArray(rule)
       throw new Error "not a rule: "+rule
 
