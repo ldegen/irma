@@ -73,8 +73,20 @@ describe "The Query Parser", ->
     ]
 
 
+  it "understands occurence annotations", ->
+    expect(parse '-a +(foo ?bar)').to.eql [
+      "SEQ"
+      ["MUST_NOT", ["TERM", "a"]]
+      ["MUST",["SEQ",["TERM", "foo"],["SHOULD",["TERM","bar"]]]]
+    ]
 
-    
+  it "understands field-qualified expressions", ->
+    expect(parse 'oink:foo umf:(fanta 4) tada:"ja wohl"').to.eql [
+      "SEQ"
+      ["QLF", "oink", ["TERM","foo"]]
+      ["QLF", "umf", ["SEQ", ["TERM", "fanta"],["TERM", "4"]]]
+      ["QLF", "tada",["DQUOT","ja wohl"]]
+    ]
 
   it "falls back to trivial tokenizer when a parser exeption is caught", ->
     expect(parse "foo AND").to.eql [
