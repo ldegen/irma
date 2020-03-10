@@ -378,6 +378,40 @@ describe "ast-rewrite", ->
             [MUST_NOT, [TERM, "c"]]
           ]
 
+    describe "matchAll: Example DeMorgan's Law", ->
+      A = [VAR, 'A']
+      B = [VAR, 'B']
+      As = [VARS, 'As']
+      Bs = [VARS, 'Bs']
+      # this is a real-life example of a two rules that use DeMorgan's Law
+      # to reduce the total number of SEQ nodes
+      it "transforms (?(-a) ?(-b) ?(-c)) to -(+a +b +c) [DeMorgan 1]", ->
+        rule = compileRule [ [SEQ, As], matchAll("As",[[SHOULD, [MUST_NOT,A]], [MUST,A]], "Bs"), [MUST_NOT, [SEQ,Bs]]]
+        input = [SEQ
+          [SHOULD, [MUST_NOT, [TERM, 'a']]]
+          [SHOULD, [MUST_NOT, [TERM, 'b']]]
+          [SHOULD, [MUST_NOT, [TERM, 'c']]]]
+        expected = [MUST_NOT, [SEQ
+          [MUST, [TERM, 'a']]
+          [MUST, [TERM, 'b']]
+          [MUST, [TERM, 'c']]]]
+        actual = rule input
+        expect(actual).to.eql expected
+      it "transforms -(a b c) to -a -b -c [DeMorgan 2]", ->
+        rule = compileRule [ [MUST_NOT, [SEQ, As]], matchAll("As", [[SHOULD, A], [MUST_NOT, A]], "Bs"), [SEQ, Bs]]
+        input = [MUST_NOT, [SEQ
+          [SHOULD, [TERM, 'a']]
+          [SHOULD, [TERM, 'b']]
+          [SHOULD, [TERM, 'c']]]]
+        expected = [SEQ
+          [MUST_NOT, [TERM, 'a']]
+          [MUST_NOT, [TERM, 'b']]
+          [MUST_NOT, [TERM, 'c']]
+        ]
+        actual = rule input
+        expect(actual).to.eql expected
+        
+
 
     describe "matchAll/matchSome: a more complex example",->
       A = [VAR, 'A']

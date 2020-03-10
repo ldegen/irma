@@ -18,7 +18,7 @@
 } = require "../src/ast-helper.coffee"
 
 unparse = require "./ast-unparse.coffee"
-{bottomup,ruleBased} = require "./ast-rewrite.coffee"
+{bottomup,ruleBased, matchAll, matchSome} = require "./ast-rewrite.coffee"
 
 star = (tf)->(ast)->
   transformedAst = ast
@@ -36,43 +36,13 @@ chain = (tfs...)->(value)->
     {value} = tf value
   {value}
 
-# This works for somthing like (a ?(?b ?c) d) --> (a ?b ?c d).  I.e. there is a
-# sequence within a sequence. The inner sequence is SHOULD and all its elements
-# are SHOULD. Then the inner sequence could be inlined.  The same would work
-# with MUST. (MUST_NOT is different!)
-#
-inlineSeq = (t)->
-  return unless isTerm t
-
-  [head, elms...] = t
-
-  return unless head is SEQ
-
-  precondition = (occ, elm)->
-    m = match([occ, [SEQ, [VARS, 'Elms']]], elm)
-    unless m?
-      return false
-    {Elms:subElms} = m
-    subElms if subElms.every (subElm)->isTerm(subElm) and subElm[0] is occ
-
-  dirty = false
-
-  reducer = (prevElms, elm)->
-    for occ in [SHOULD, MUST, DEFAULT]
-      subElms = precondition occ, elm
-      if subElms
-        dirty = true
-        return prevElms.concat subElms
-    prevElms.concat [elm]
-
-  transformedElms = elms.reduce reducer, []
-  if dirty
-    [head, transformedElms...]
 
 isRoot = (value, path)-> if path.length is 0 then value
 
 A=[VAR, 'A']
 As=[VARS, 'As']
+B=[VAR, 'B']
+Bs=[VARS, 'Bs']
 Q=[VAR, 'Q']
 DEFAULT = "DEFAULT"
 
@@ -143,6 +113,10 @@ simplify = bottomup ruleBased [
 
 ]
 
+
+occurs = (occ)->(t)->t if match [occ,A], t
+InlineSequence = (occ)->[ [occ, [SEQ, As]], matchAll('As',occurs(occ))]
+
 applyDefault = bottomup ruleBased [
   # after the simplification phase is done,
   # DEFAULT occurences should only apear as direct children of SEQ nodes
@@ -155,10 +129,16 @@ applyDefault = bottomup ruleBased [
 
   # after that, we can run a final simplification rule:
   # if a sequence is marked with an occurence X and all its children are marked with the
-  # same occurence, this sequence can be inlined. I could not come up with a
-  # clever way to represent this using pattern matching, so I wrote a messy little function
-  # for this:
-  inlineSeq
+  # same occurence, this sequence can be inlined.
+  # (... +(+a +b +c ...) ...) ---> (... +a +b +c ... ...)
+  [ [SEQ, As], matchSome("As",InlineSequence(MUST),"Bs"), [SEQ, Bs]],
+  [ [SEQ, As], matchSome("As",InlineSequence(SHOULD),"Bs"), [SEQ, Bs]],
+  [ [SEQ, As], matchSome("As",InlineSequence(DEFAULT),"Bs"), [SEQ, Bs]],
+
+  # DeMorgan I: (?(-a) ?-(b) ...)  ---> -(+a +b ... )
+  [ [SEQ, As], matchAll("As",[[SHOULD, [MUST_NOT,A]], [MUST,A]], "Bs"), [MUST_NOT, [SEQ,Bs]]]
+  # DeMorgan II: -(?a ?b ... ) ---> -a -b ...
+  [ [MUST_NOT, [SEQ, As]], matchAll("As", [[SHOULD, A], [MUST_NOT, A]], "Bs"), [SEQ, Bs]]
 ]
 cleanup = bottomup ruleBased [
   # finally, we can remove most of the SHOULD occurences, since they are assumed to be the
