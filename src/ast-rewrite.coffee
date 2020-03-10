@@ -1,5 +1,7 @@
 {isTerm, VAR, VARS} = require "./ast-helper.coffee"
+sigmatch = require "sigmatch"
 {match} = require "./ast-matcher.coffee"
+merge = require "./shallow-merge.coffee"
 replace = (ast, [i,tail...], replacement)->
   if not i?
     replacement ast
@@ -99,35 +101,36 @@ bottomup = (rewrite)->
       # term and pass it to the rewrite strategy
       rewrite [head,newArgs...], newCx, path
       
+normalizeRule = (rule)->
+  if typeof rule is "function"
+    return [rule].reduce ruleReducer
+  unless Array.isArray(rule)
+    throw new Error "not a rule: "+rule
+
+  if rule.length > 1
+    [pattern0, guards..., template0] = rule
+    template = if typeof template0 is "function" then template0 else (s)->applySubst s, template0
+    
+    pattern = switch
+      when typeof pattern0 is "function" then pattern0
+      when isTerm(pattern0) then (tree)->
+        match pattern0, tree
+      else
+        throw new Error "cannot make a matcher from "+pattern0
+    
+    # composes the functions within a rule into one function
+    ruleReducer = (prevf, f)->(v0, path)->
+      v = prevf v0, path
+      if v? then f v, path
+    [pattern, guards..., template].reduce ruleReducer
+    
 ruleBased = (opts)->
   if Array.isArray opts
     opts=rules:opts
 
   {rules:rules0, maxIterations=25} = opts
   
-  # composes the functions within a rule into one function
-  ruleReducer = (prevf, f)->(v0, path)->
-    v = prevf v0, path
-    if v? then f v, path
 
-  normalizeRule = (rule)->
-    if typeof rule is "function"
-      return [rule].reduce ruleReducer
-    unless Array.isArray(rule)
-      throw new Error "not a rule: "+rule
-
-    if rule.length > 1
-      [pattern0, guards..., template0] = rule
-      template = if typeof template0 is "function" then template0 else (s)->applySubst s, template0
-      
-      pattern = switch
-        when typeof pattern0 is "function" then pattern0
-        when isTerm(pattern0) then (tree)->
-          match pattern0, tree
-        else
-          throw new Error "cannot make a matcher from "+pattern0
-      
-      [pattern, guards..., template].reduce ruleReducer
 
   rules = rules0.map normalizeRule
 
@@ -147,4 +150,56 @@ ruleBased = (opts)->
           dirty=true
     {cx,value}
 
-module.exports = {replace, topdown, bottomup, ruleBased, applySubst}
+
+_matchAll = (InVar, Rule, OutVar)->
+  rule = normalizeRule Rule
+  (input, path)->
+    subst = if InVar? then input else {}
+    terms = if InVar? then input[InVar] else input
+    return if not Array.isArray(terms)
+    return if isTerm(terms)
+
+    instances = (for orig in terms
+      transformed = rule orig, path
+      if transformed
+        transformed
+      else
+        break
+    )
+    return null if instances.length isnt terms.length
+    if OutVar?
+      merge subst, "#{OutVar}": instances
+    else
+      instances
+
+matchAll = sigmatch (m)->
+  m "s,.,s?", _matchAll
+  m ".,s?", (rule, OutVar)->_matchAll null, rule, OutVar
+
+_matchSome = (InVar, Rule, OutVar)->
+  rule = normalizeRule Rule
+  (input, path)->
+    subst = if InVar? then input else {}
+    terms = if InVar? then input[InVar] else input
+    return if not Array.isArray(terms)
+    return if isTerm(terms)
+    success = false
+
+    instances = (for orig in terms
+      transformed = rule orig, path
+      if transformed
+        success = true
+        transformed
+      else
+        orig
+    )
+    return null unless success
+    if OutVar?
+      merge subst, "#{OutVar}": instances
+    else
+      instances
+
+matchSome = sigmatch (m)->
+  m "s,.,s?", _matchSome
+  m ".,s?", (rule, OutVar)->_matchSome null, rule, OutVar
+module.exports = {replace, topdown, bottomup, ruleBased, applySubst, matchAll, matchSome}

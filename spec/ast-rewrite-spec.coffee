@@ -1,5 +1,5 @@
 {VARS,SEQ, OR, TERM, VAR,AND,QLF,SHOULD,MUST_NOT,MUST,NOT,isTerm} = require "../src/ast-helper.coffee"
-{replace, topdown, bottomup, ruleBased, applySubst} = require "../src/ast-rewrite.coffee"
+{replace, topdown, bottomup, ruleBased, applySubst, matchAll, matchSome} = require "../src/ast-rewrite.coffee"
 describe "ast-rewrite", ->
   describe "replace", ->
 
@@ -132,7 +132,7 @@ describe "ast-rewrite", ->
       # If the result is undefined, it is assumed that the rule could not be applied to the
       # given term.
       #
-      # A rule may also be specified as list of unary functions. The functions will be composed 
+      # A rule may also be specified as list of unary functions. The functions will be composed
       # with a simple combinator that breaks early if one of them yields an undefined result.
       #
       # If the rule is a list containing two or more functions, the first and the last function may
@@ -204,67 +204,165 @@ describe "ast-rewrite", ->
         actual = rewrite ast
         expect(actual.value).to.eql [SEQ, [NOT, [TERM, 'touched']],[OR, [TERM, 'touched'], [TERM, 'touched']]]
 
-      xit "creates a rule-based rewrite strategy", ->
 
-        rules = [
-          # normalization:
-          # (A OR B OR ... Z)    --> [?A ?B ... ?Z]
-          [[OR,[VARS,'operands']]  , ({operands})->[SEQ].concat operands.map (o)->[SHOULD,o]]
-          # (A AND B AND ... Z)  --> [+A +B ... +Z]
-          [[AND,[VARS,'operands']] , ({operands})->[SEQ].concat operands.map (o)->[MUST,o]]
-          # (NOT A)              --> [-A]
-          [[NOT,[VAR,'o']]         , ({o})->[SEQ,[MUST_NOT,o]]]
+    describe "matchAll", ->
 
-
-          # simplification:
-          # [-[-a]] --> [+a]
-          [ [SEQ, [MUST_NOT, [SEQ, [MUST_NOT, [VAR, 'A']]]]]  ,   ({ A })->[SEQ, [MUST, A]]]
-          # [-[+a]] --> [-a]
-          [ [SEQ, [MUST_NOT, [SEQ, [MUST, [VAR, 'A']]]]]      ,   ({ A })->[SEQ, [MUST_NOT, A]]]
-          # [?a]    --> [+a]
-          [ [SEQ, [SHOULD, [VAR, 'A']]]                       ,   ({ A })->[SEQ, [MUST, A]]]
-          # [+[-a]] --> [-a]
-          [ [SEQ, [MUST, [SEQ, [MUST_NOT, [VAR, 'A']]]]]      ,   ({ A })->[SEQ, [MUST_NOT, A]]]
-          # [+[+a]] --> [+a]
-          [ [SEQ, [MUST, [SEQ, [MUST, [VAR, 'A']]]]]          ,   ({ A })->[SEQ, [MUST, A]]]
-          # [?[+a]] --> [?a]
-          [ [SEQ, [SHOULD, [SEQ, [MUST, [VAR, 'A']]]]]        ,   ({ A })->[SEQ, [SHOULD, A]]]
-
-
-
-          # something like this is missing: how can I match a variable-arity term, where all children
-          # match some pattern?
-          # One possibility would be to allow "guarded" variables in conjunction with VARS
-          #
-          #   [ [MUST, [SEQ, [VARS,'Elms',[SEQ, [MUST, 'Elm']]]]] ,   ({Elms})-> Elms.map ({Elm})->[MUST, 'Elm'] ]
-          #
-          # I decided against this approach for now since the substitutional semantics of the guards are 
-          # not quite clear.
-          #
-          # On the other hand: rules are just chains of unary functions that break early if one of them returns null or undefined.
-          #
-          #[ [MUST, [SEQ, [VARS, 'Elms']]], (({Elms})->EL
-
-
+      it "applies a rule on a list of terms", ->
+        terms = [
+          [MUST, [TERM, "a" ]]
+          [MUST, [TERM, "b" ]]
+          [MUST, [TERM, "c" ]]
         ]
-        rewrite = bottomup ruleBased rules
-        rewritten = rewrite(
-          [OR,
-            [TERM, 'a']
-            [NOT
-              [TERM,'b']]
-            [AND,
-              [TERM,'c']
-              [TERM,'d']]]
-        )
-        expect(rewritten.tree).to.eql(
-          [SEQ,
-            [SHOULD,[TERM,'a']]
-            [SHOULD,[SEQ
-              [MUST_NOT,[TERM,'b']]]]
-            [SHOULD,[SEQ
-              [MUST,[TERM,'c']]
-              [MUST,[TERM,'d']]]]]
-        )
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchAllRule = matchAll rule
 
-      it "simplifies everything", ->
+        expect(matchAllRule terms).to.eql [
+          [MUST_NOT, [TERM, "a"]]
+          [MUST_NOT, [TERM, "b"]]
+          [MUST_NOT, [TERM, "c"]]
+        ]
+
+      it "fails if the rule cannot be applied to one or more term", ->
+        terms = [
+          [MUST, [TERM, "a" ]]
+          [SHOULD, [TERM, "b" ]]
+          [MUST, [TERM, "c" ]]
+        ]
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchAllRule = matchAll rule
+
+        expect(matchAllRule terms).to.not.be.ok
+
+      it "can optionally lookup the input terms in a substitution", ->
+        subst=
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchAllRule = matchAll "origTerms", rule
+
+        expect(matchAllRule subst).to.eql [
+          [MUST_NOT, [TERM, "a"]]
+          [MUST_NOT, [TERM, "b"]]
+          [MUST_NOT, [TERM, "c"]]
+        ]
+
+      it "can optionally merge the output terms into a substitution", ->
+        subst=
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchAllRule = matchAll "origTerms", rule, "transformedTerms"
+
+        expect(matchAllRule subst).to.eql
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+          transformedTerms:[
+            [MUST_NOT, [TERM, "a"]]
+            [MUST_NOT, [TERM, "b"]]
+            [MUST_NOT, [TERM, "c"]]
+          ]
+          
+    describe "matchSome", ->
+
+      it "applies a rule on a list of terms", ->
+        terms = [
+          [MUST, [TERM, "a" ]]
+          [MUST, [TERM, "b" ]]
+          [MUST, [TERM, "c" ]]
+        ]
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchSomeRule = matchSome rule
+
+        expect(matchSomeRule terms).to.eql [
+          [MUST_NOT, [TERM, "a"]]
+          [MUST_NOT, [TERM, "b"]]
+          [MUST_NOT, [TERM, "c"]]
+        ]
+
+      it "leaves terms unchanged for which the rule cannot be applied", ->
+        terms = [
+          [MUST, [TERM, "a" ]]
+          [SHOULD, [TERM, "b" ]]
+          [MUST, [TERM, "c" ]]
+        ]
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchSomeRule = matchSome rule
+
+        expect(matchSomeRule terms).to.eql [
+          [MUST_NOT, [TERM, "a"]]
+          [SHOULD, [TERM, "b"]]
+          [MUST_NOT, [TERM, "c"]]
+        ]
+
+      it "fails if the rule cannot be applied to any term", ->
+        terms = [
+          [MUST_NOT, [TERM, "a" ]]
+          [SHOULD, [TERM, "b" ]]
+          [NOT, [TERM, "c" ]]
+        ]
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchSomeRule = matchSome rule
+
+        expect(matchSomeRule terms).to.not.be.ok
+
+      it "can optionally lookup the input terms in a substitution", ->
+        subst=
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchSomeRule = matchSome "origTerms", rule
+
+        expect(matchSomeRule subst).to.eql [
+          [MUST_NOT, [TERM, "a"]]
+          [MUST_NOT, [TERM, "b"]]
+          [MUST_NOT, [TERM, "c"]]
+        ]
+
+      it "can optionally merge the output terms into a substitution", ->
+        subst=
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+        
+        rule = [ [MUST, [VAR, 'A']], [MUST_NOT, [VAR, 'A']]]
+        matchSomeRule = matchSome "origTerms", rule, "transformedTerms"
+
+        expect(matchSomeRule subst).to.eql
+          origTerms: [
+            [MUST, [TERM, "a" ]]
+            [MUST, [TERM, "b" ]]
+            [MUST, [TERM, "c" ]]
+          ]
+          somethingElse: 42
+          transformedTerms:[
+            [MUST_NOT, [TERM, "a"]]
+            [MUST_NOT, [TERM, "b"]]
+            [MUST_NOT, [TERM, "c"]]
+          ]
