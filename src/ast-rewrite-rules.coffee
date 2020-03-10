@@ -69,6 +69,7 @@ inlineSeq = (t)->
   if dirty
     [head, transformedElms...]
 
+isRoot = (value, path)-> if path.length is 0 then value
 
 A=[VAR, 'A']
 As=[VARS, 'As']
@@ -130,15 +131,35 @@ simplify = bottomup ruleBased [
 ]
 
 applyDefault = bottomup ruleBased [
+  # after the simplification phase is done,
+  # DEFAULT occurences should only apear as direct children of SEQ nodes
+  # or as the root node. We can also be sure that their children cannot be
+  # occurence nodes.
+  #
+  # We substitute the DEFAULT nodes with SHOULD, since this is our
+  # default semantics. We could also use MUST.
   [ [DEFAULT, A], [SHOULD, A]]
+
+  # after that, we can run a final simplification rule:
+  # if a sequence is marked with an occurence X and all its children are marked with the
+  # same occurence, this sequence can be inlined. I could not come up with a
+  # clever way to represent this using pattern matching, so I wrote a messy little function
+  # for this:
   inlineSeq
 ]
 cleanup = bottomup ruleBased [
-  # remove default occs
+  # finally, we can remove most of the SHOULD occurences, since they are assumed to be the
+  # default anyway.
   [ [SHOULD, [TERM, A]], [TERM, A ]]
   [ [SHOULD, [DQUOT, A]], [DQUOT, A ]]
   [ [SHOULD, [SQUOT, A]], [SQUOT, A ]]
   [ [SHOULD, [SEQ, As]], [SEQ, As ]]
+  [ [SHOULD, [QLF, Q,A]], [QLF, Q,A ]]
+  # We must not remove SHOULD if it preceeds MUST_NOT, at least not
+  # if it apears in a sequence together with other terms.
+  # We *can* however remove SHOULD if it appears at the very
+  # root of the tree.
+  [ [SHOULD, A], isRoot, A]
 ]
 
 
