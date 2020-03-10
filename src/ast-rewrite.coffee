@@ -101,7 +101,10 @@ bottomup = (rewrite)->
       # term and pass it to the rewrite strategy
       rewrite [head,newArgs...], newCx, path
       
-normalizeRule = (rule)->
+compileRule = (rule)->
+  ruleReducer = (prevf, f)->(v0, path)->
+    v = prevf v0, path
+    if v? then f v, path
   if typeof rule is "function"
     return [rule].reduce ruleReducer
   unless Array.isArray(rule)
@@ -119,9 +122,6 @@ normalizeRule = (rule)->
         throw new Error "cannot make a matcher from "+pattern0
     
     # composes the functions within a rule into one function
-    ruleReducer = (prevf, f)->(v0, path)->
-      v = prevf v0, path
-      if v? then f v, path
     [pattern, guards..., template].reduce ruleReducer
     
 ruleBased = (opts)->
@@ -132,7 +132,7 @@ ruleBased = (opts)->
   
 
 
-  rules = rules0.map normalizeRule
+  rules = rules0.map compileRule
 
 
   (value,cx,path)->
@@ -152,7 +152,7 @@ ruleBased = (opts)->
 
 
 _matchAll = (InVar, Rule, OutVar)->
-  rule = normalizeRule Rule
+  rule = compileRule Rule
   (input, path)->
     subst = if InVar? then input else {}
     terms = if InVar? then input[InVar] else input
@@ -177,7 +177,7 @@ matchAll = sigmatch (m)->
   m ".,s?", (rule, OutVar)->_matchAll null, rule, OutVar
 
 _matchSome = (InVar, Rule, OutVar)->
-  rule = normalizeRule Rule
+  rule = compileRule Rule
   (input, path)->
     subst = if InVar? then input else {}
     terms = if InVar? then input[InVar] else input
@@ -202,4 +202,4 @@ _matchSome = (InVar, Rule, OutVar)->
 matchSome = sigmatch (m)->
   m "s,.,s?", _matchSome
   m ".,s?", (rule, OutVar)->_matchSome null, rule, OutVar
-module.exports = {replace, topdown, bottomup, ruleBased, applySubst, matchAll, matchSome}
+module.exports = {replace, topdown, bottomup, ruleBased, applySubst, matchAll, matchSome, compileRule}

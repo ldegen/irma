@@ -1,5 +1,16 @@
 {VARS,SEQ, OR, TERM, VAR,AND,QLF,SHOULD,MUST_NOT,MUST,NOT,isTerm} = require "../src/ast-helper.coffee"
-{replace, topdown, bottomup, ruleBased, applySubst, matchAll, matchSome} = require "../src/ast-rewrite.coffee"
+{
+  replace
+  topdown
+  bottomup
+  ruleBased
+  applySubst
+  matchAll
+  matchSome
+  compileRule
+} = require "../src/ast-rewrite.coffee"
+{match} = require "../src/ast-matcher.coffee"
+unparse = require "../src/ast-unparse.coffee"
 describe "ast-rewrite", ->
   describe "replace", ->
 
@@ -366,3 +377,104 @@ describe "ast-rewrite", ->
             [MUST_NOT, [TERM, "b"]]
             [MUST_NOT, [TERM, "c"]]
           ]
+
+
+    describe "matchAll/matchSome: a more complex example",->
+      A = [VAR, 'A']
+      B = [VAR, 'B']
+      As = [VARS, 'As']
+      Bs = [VARS, 'Bs']
+      it "works", ->
+
+        # This is a real-life example, a rule that is used to inline redundant
+        # sequences.
+        #
+        # An inner sequence that apears within an outer sequence is redundant
+        # if - all its elements have the same occurence annotation - the inner
+        # sequence itself carries the same occurence annotation.  In this case,
+        # the inner sequence can be inlined, i.e. all its elements can be
+        # inserted directly into the outer sequence.
+        #
+        # For example: consider the term
+        #
+        # ( a b +(+c +d) +(+e +f +g) +(h +i) )
+        #
+        # Here the first and the second of the inner sequences are redundant.
+        # The last one is not redundant because h does not carry the MUST
+        # occurence annotation.  Our rule would reduce the above term to
+        #
+        # (a b +c +d +e +f +g +(h +i))
+        #
+        # We write the rule from the inside out.
+        #
+        # The inner-most rule simply accepts a term if it is of the form +A. It
+        # does not yield a substitution, instead it returns the term unmodified
+        # on success.
+        #
+        # The next rule accepts terms of the form +(A B C...) but only if each
+        # of the A, B, C, ...  satisfies the first rule. This is the rule that
+        # does the actual transformation: it basically inlines the SEQ node.
+        # Note that it does not produce a substitution, but simply returns the
+        # element terms on success -- WITHOUT the surrounding SEQ node.
+        #
+        # The outer-most rule accepts terms of the form (A B C...), i.e. any
+        # sequence, but only if at least one of the elements A,B,C... can
+        # successfully be transformed by the previous rule.  This rule takes
+        # the transformed elements and rewrapps them into a SEQ node.
+
+        innerMostRule = (t)->t if match [MUST,A], t
+        middleRule = [ [MUST, [SEQ, As]], matchAll('As',innerMostRule)]
+        outerRule = compileRule [ [SEQ, As], matchSome('As', middleRule, 'Bs'), [SEQ, Bs]]
+
+        matchingTerm = [SEQ,
+          [TERM, 'a']
+          [TERM, 'b']
+          [MUST,
+            [SEQ
+              [MUST, [TERM, 'c']]
+              [MUST, [TERM, 'd']]]]
+          [MUST,
+            [SEQ
+              [MUST, [TERM, 'e']]
+              [MUST, [TERM, 'f']]
+              [MUST, [TERM, 'g']]]]
+          [MUST,
+            [SEQ
+              [TERM,'h']
+              [MUST,[TERM, 'i']]]]]
+        noMatchingTerm = [SEQ,
+          [TERM, 'a']
+          [TERM, 'b']
+          [SHOULD,
+            [SEQ
+              [MUST, [TERM, 'c']]
+              [MUST, [TERM, 'd']]]]
+          [MUST,
+            [SEQ
+              [SHOULD, [TERM, 'e']]
+              [MUST, [TERM, 'f']]
+              [MUST, [TERM, 'g']]]]
+          [MUST,
+            [SEQ
+              [TERM,'h']
+              [MUST,[TERM, 'i']]]]]
+
+        expect(outerRule noMatchingTerm).to.not.be.ok
+        expected = [SEQ
+          [TERM, 'a']
+          [TERM, 'b']
+          [MUST, [TERM, 'c']]
+          [MUST, [TERM, 'd']]
+          [MUST, [TERM, 'e']]
+          [MUST, [TERM, 'f']]
+          [MUST, [TERM, 'g']]
+          [MUST,
+            [SEQ
+              [TERM,'h']
+              [MUST,[TERM, 'i']]]]]
+        
+        actual = outerRule matchingTerm
+        expect(actual).to.eql expected
+
+
+
