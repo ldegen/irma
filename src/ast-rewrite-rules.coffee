@@ -78,6 +78,8 @@ DEFAULT = "DEFAULT"
 
 normalize = bottomup ruleBased [
   # normalization:
+  # Start by converting all boolean expressions to sequence expressions with
+  # occurence annotations.
   # (A OR B OR ... Z)    --> [?A ?B ... ?Z]
   [[OR,[VARS,'operands']]  , ({operands})->[SEQ].concat operands.map (o)->[SHOULD,o]]
   # (A AND B AND ... Z)  --> [+A +B ... +Z]
@@ -85,7 +87,13 @@ normalize = bottomup ruleBased [
   # (NOT A)              --> [-A]
   [[NOT,[VAR,'o']]         , ({o})->[SEQ,[MUST_NOT,o]]]
 
-  # wrap sequences and leaf nodes in default occurence
+  # Normalization
+  # wrap leaf nodes and sequence nodes with an artifical DEFAULT occurence.
+  # Later, during simplification phase, we will let these ripple up the tree
+  # until they meet
+  #   - another occurence annotation
+  #   - as sequence node
+  #   - the root
   [[TERM, A]                , [DEFAULT,[TERM, A]]]
   [[SQUOT, A]               , [DEFAULT,[SQUOT, A]]]
   [[DQUOT, A]               , [DEFAULT,[DQUOT, A]]]
@@ -94,11 +102,16 @@ normalize = bottomup ruleBased [
 
 simplify = bottomup ruleBased [
   # simplification:
+  # Singleton-Sequences can be inlined, if the occurence of the element
+  # is known.
   # [-a] --> -a, [+a] --> +a,  [?a] --> +a
   [ [SEQ,[MUST_NOT, A]]                      ,  [MUST_NOT, A] ]
   [ [SEQ,[MUST, A]]                          ,  [MUST, A] ]
   [ [SEQ,[SHOULD, A]]                        ,  [MUST, A] ]
 
+  # simplification:
+  # In many cases, occurences that appear directly below onother
+  # occurence can be eliminated. However we cannot simply negate SHOULD
   # +(-a) --> -a, -(+a) --> -a
   [ [MUST, [MUST_NOT, A]]                    ,  [MUST_NOT, A]]
   [ [MUST_NOT, [MUST, A]]                    ,  [MUST_NOT, A]]
@@ -106,22 +119,22 @@ simplify = bottomup ruleBased [
   [ [SHOULD, [SHOULD, A]]                    ,  [SHOULD, A]]
   [ [SHOULD, [MUST, A]]                      ,  [SHOULD, A]]
   [ [MUST, [SHOULD, A]]                      ,  [SHOULD, A]]
-  # [?a] --> [+a]
-  [ [SEQ, [SHOULD, A]]                       ,  [MUST, A]]
-
   # +(+a) --> +a, -(-a) --> +a
   [ [MUST, [MUST, A]]                        ,  [MUST, A]]
   [ [MUST_NOT, [MUST_NOT, A]]                ,  [MUST, A]]
 
-  # "pull up"  occs
+  # simplification:
+  # If DEFAULT meets an actual occurence, it can be eliminated.
   [ [MUST, [DEFAULT, A]]        , [MUST,A]]
   [ [SHOULD, [DEFAULT, A]]      , [SHOULD,A]]
   [ [MUST_NOT, [DEFAULT, A]]    , [MUST_NOT,A]]
   [ [DEFAULT, [DEFAULT, A]]     , [DEFAULT,A]]
 
-  # NOTE it is important to do this *AFTER* pull up
-  # replace DEFAULT with SHOULD
-  #[ [DEFAULT, A]                , [SHOULD, A]]
+  # simplification:
+  # Allow Occurence annotations to "ripple up" the tree until
+  # they meet a sequence or the root.
+  # Since the only other inner notes are field-qualifications
+  # this is rather simple:
   [ [QLF, Q, [DEFAULT, A]]      , [DEFAULT,[QLF, Q,A]]]
   [ [QLF, Q, [MUST, A]]         , [MUST,[QLF, Q,A]]]
   [ [QLF, Q, [MUST_NOT, A]]     , [MUST_NOT,[QLF, Q,A]]]
