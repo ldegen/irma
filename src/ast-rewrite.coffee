@@ -104,10 +104,15 @@ ruleBased = (opts)->
     opts=rules:opts
 
   {rules:rules0, maxIterations=25} = opts
+  
+  # composes the functions within a rule into one function
+  ruleReducer = (prevf, f)->(v0, path)->
+    v = prevf v0, path
+    if v? then f v, path
 
   normalizeRule = (rule)->
     if typeof rule is "function"
-      return [rule]
+      return [rule].reduce ruleReducer
     unless Array.isArray(rule)
       throw new Error "not a rule: "+rule
 
@@ -122,12 +127,10 @@ ruleBased = (opts)->
         else
           throw new Error "cannot make a matcher from "+pattern0
       
-      [pattern, guards..., template]
+      [pattern, guards..., template].reduce ruleReducer
 
   rules = rules0.map normalizeRule
-    
 
-  ruleReducer = (prevResult, f)->if prevResult? then f prevResult
 
   (value,cx,path)->
     dirty = true
@@ -138,7 +141,7 @@ ruleBased = (opts)->
       i++
       dirty = false
       for rule in rules
-        newValue = rule.reduce ruleReducer, value
+        newValue = rule value, path
         if newValue?
           value=newValue
           dirty=true
