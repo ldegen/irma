@@ -143,7 +143,7 @@ ruleBased = (opts)->
         throw new Error "no fixpoint in #{maxIterations} iterations"
       i++
       dirty = false
-      for rule in rules
+      for rule, R in rules
         newValue = rule value, path
         if newValue?
           value=newValue
