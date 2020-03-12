@@ -1,7 +1,8 @@
 
 unparse = require "../src/ast-unparse.coffee"
-{star, simplify, Normalize} = require "../src/ast-rewrite-rules.coffee"
+{star, simplify, Normalize, Simplify} = require "../src/ast-rewrite-rules.coffee"
 {parse} = require "../src/query-parser.coffee"
+pretty = require "../src/ast-pretty.coffee"
 {match, find} = require "../src/ast-matcher.coffee"
 {
   isTerm
@@ -19,7 +20,6 @@ unparse = require "../src/ast-unparse.coffee"
   VARS
   VAR
 } = require "../src/ast-helper.coffee"
-normalize = Normalize "SHOULD"
 
 A = [VAR,'A']
 As = [VARS,'As']
@@ -38,14 +38,18 @@ Bs = [VARS,'Bs']
 
 test = it
 describe "AST Rewrite Rules", ->
-
+  #log = (rule,N,path, orig,transformed)->
+  #  name = rule.displayName ? "#"+N
+  #  console.log "Rule \"#{name}\" at /#{path.join '/'}:"
+  #  console.log "before: \n", pretty orig, "  "
+  #  console.log "after: \n", pretty transformed, "  "
+  log = undefined
   astFor = (s)->
+    normalize = Normalize "SHOULD", log
+    simplify = Simplify log
     orig = parse s
     {value:normalized} = normalize orig
     {value:simplified} = star(simplify) normalized
-    #console.log "orig", orig
-    #console.log "normalized", JSON.stringify normalized, null, "  "
-    #console.log "simplified", JSON.stringify simplified, null, "  "
     simplified
   process = (s)->unparse astFor s
   head = (t)->if Array.isArray(t) then t[0]
@@ -80,6 +84,7 @@ describe "AST Rewrite Rules", ->
     expect(process "a b c").to.eql "?a ?b ?c"
     expect(process "a +b").to.eql "?a +b"
     expect(process "a 42:b 13:(c +d)").to.eql "?a ?42:b ?13:(?c +d)"
+    expect(process "a -(b c)").to.eql "?a -b -c"
 
   test "All boolean expressions are eliminated", ->
     expect(process "NOT (b OR c)").to.eql "-b -c"

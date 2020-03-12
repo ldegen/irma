@@ -90,8 +90,9 @@ bottomup = (rewrite)->
       {cx:cx0, value:t0}
     # if it is an array, but not a propper term, we assume an array of terms
     else if not isTerm(t0)
-      console.log "t0", t0
-      throw new Error "FIXME: i think this should not happen?"
+      # NOTE: this should happen during normal recursion.
+      # It *may* happen if our toplevel is not a propper term to begin with.
+      recurseArgs t0, cx0, path
     else
       # first we hae to process the argument terms
       [head, oldArgs...] = t0
@@ -102,33 +103,42 @@ bottomup = (rewrite)->
       rewrite [head,newArgs...], newCx, path
       
 compileRule = (rule)->
-  ruleReducer = (prevf, f)->(v0, path)->
-    v = prevf v0, path
-    if v? then f v, path
+  identity = (x)->x
+  ruleReducer = (prevf, f0)->
+    
+    if typeof f0 is "string"
+      prevf.displayName = f0
+      prevf
+    else
+      f = switch
+        when isTerm(f0) then (input)->
+          switch
+            when isTerm(input) then match f0, input
+            when typeof input is "object" then applySubst input, f0
+            else
+              throw new Error "cannot process this: "+input
+        when typeof f0 is "function" then f0
+        else
+          throw new Error "not a valid rule component: "+f0
+      g = (v0, path)->
+        v = prevf v0, path
+        if v? then f v, path
+      g.displayName = prevf.displayName
+      g
+
   if typeof rule is "function"
-    return [rule].reduce ruleReducer
+    return rule
   unless Array.isArray(rule)
     throw new Error "not a rule: "+rule
-
-  if rule.length > 1
-    [pattern0, guards..., template0] = rule
-    template = if typeof template0 is "function" then template0 else (s)->applySubst s, template0
     
-    pattern = switch
-      when typeof pattern0 is "function" then pattern0
-      when isTerm(pattern0) then (tree)->
-        match pattern0, tree
-      else
-        throw new Error "cannot make a matcher from "+pattern0
-    
-    # composes the functions within a rule into one function
-    [pattern, guards..., template].reduce ruleReducer
+  # composes the functions within a rule into one function
+  rule.reduce ruleReducer, identity
     
 ruleBased = (opts)->
   if Array.isArray opts
     opts=rules:opts
 
-  {rules:rules0, maxIterations=25} = opts
+  {rules:rules0, maxIterations=25, report} = opts
   
 
 
@@ -146,6 +156,8 @@ ruleBased = (opts)->
       for rule, R in rules
         newValue = rule value, path
         if newValue?
+          if typeof report is "function"
+            report rule, R, path, value, newValue
           value=newValue
           dirty=true
     {cx,value}

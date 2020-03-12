@@ -25,9 +25,8 @@ escapeSQ = (s)->
     .replace /'/g, '\\\''
 
 
-builder =()->
+builder =(indent="")->
   stack = []
-  indent = ""
   vertical = false
   output = ""
   hCount = 0
@@ -107,7 +106,7 @@ pretty = (t,  b=builder())->
     else
       throw new Error "ich hab was vergessen"
 
-module.exports = (t)->
-  b=builder()
+module.exports = (t, indent="")->
+  b=builder(indent)
   pretty t,b
   b.output()
