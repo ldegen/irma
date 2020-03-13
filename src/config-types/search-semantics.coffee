@@ -29,11 +29,15 @@ module.exports = class SearchSemantics extends ConfigNode
     postprocess = @_options?.postprocess ? identity
     queryComponents = @_options?.queryComponents ? defaultQueryComponents
     reducer = @_options?.reducer ? (a,b)->merge(a,b)
-    initialQuery = @_options?.initialQuery ? {}
-
+    initialQuery0 = @_options?.initialQuery ? {}
+    initialQuery = (if typeof initialQuery0 is 'function'
+      initialQuery0(query,type)
+    else
+      initialQuery0
+    )
 
     r = queryComponents
       .map (qc)->qc.create(query,type, attributes)
-      .reduce reducer, (if typeof initialQuery is 'function' then initialQuery(query,type) else initialQuery)
+      .reduce reducer, initialQuery
 
     call(postprocess) r
