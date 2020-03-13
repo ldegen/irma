@@ -79,7 +79,7 @@ ParenthesizedExpression
 // next there are the atomic expressions
 
 TermExpression "_term"
-  = !ANDToken !ORToken !NOTToken [^\t\n\r ()"?+\-\:]+ { return ['TERM',text().trim()];}
+  = !ANDToken !ORToken !NOTToken [^\t\n\r ()"\:]+ { return ['TERM',text().trim()];}
 
 DoubleQuotedLiteralExpression
   = '"' content:DoubleQuotedLiteralContent* '"' {return ['DQUOT', content.join("")];} 
