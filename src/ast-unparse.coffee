@@ -11,7 +11,7 @@
   NOT
   DQUOT
   SQUOT
-} = require "../src/ast-helper"
+} = require "./ast-helper"
 
 DEFAULT="DEFAULT"
 

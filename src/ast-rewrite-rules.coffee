@@ -15,7 +15,7 @@
   SQUOT
   VARS
   VAR
-} = require "../src/ast-helper"
+} = require "./ast-helper"
 
 unparse = require "./ast-unparse"
 {bottomup,ruleBased, matchAll, matchSome} = require "./ast-rewrite"

@@ -12,7 +12,7 @@
   NOT
   DQUOT
   SQUOT
-} = require "../src/ast-helper"
+} = require "./ast-helper"
 
 escapeDQ = (s)->
   s
