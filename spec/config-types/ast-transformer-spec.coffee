@@ -264,14 +264,16 @@ describe "The default AST Transformer", ->
 
 
     it "allows to define arbitrary context-transformations for particular node types", ->
-      # this is very useful for field qualifiers.
+      # TODO this is really just a proof of concept. The API sucks.
 
       transformer = new Transformer
         fields: ['oink']
         defaultOperator: 'or'
-        transformContext:
-          QLF: (operands)->
-            fieldBoosts: [operands[0]]
+        customize:
+          QLF: (operands, cx0, orig)->
+            { transformChild } = cx0
+            cx = {cx0..., fieldBoosts: [operands[0]]}
+            transformChild(cx) operands[1]
 
       ast = [MUST_NOT, [QLF,"eek",[TERM, "overthink"]]]
       expect(transformer.transform ast).to.eql
@@ -281,5 +283,36 @@ describe "The default AST Transformer", ->
               query: "overthink"
               type: "cross_fields"
               fields: ["eek"]
+              operator: "or"
+          ]
+
+    it "interpretes qualifiers as named predicates on searched fields", ->
+      
+      transformer = new Transformer
+        fields: ['oink', 'bang^2', 'barf']
+        fieldQualifiers:
+          # use named fields
+          foo: ["oink", "bang"]
+          # use a predicate function
+          ba: (s)->s.substr(0,2) is "ba"
+        defaultOperator: 'or'
+
+      ast = [AND
+        [QLF, "foo", [TERM, 'a']]
+        [QLF, "ba", [TERM, 'b']]]
+          
+      expect(transformer.transform ast).to.eql
+        bool:
+          must: [
+            multi_match:
+              query: "a"
+              type: "cross_fields"
+              fields: ["oink", "bang^2"]
+              operator: "or"
+          ,
+            multi_match:
+              query: "b"
+              type: "cross_fields"
+              fields: ["bang^2", "barf"]
               operator: "or"
           ]

@@ -40,12 +40,11 @@ groupBy = (crit)->
     
 builtInTransform = (ast, cx)->
   [opc, operands...] = ast
-  {fieldBoosts, defaultOperator, transformChild} = cx
+  {fieldBoosts, defaultOperator, transformChild, applyQualifier} = cx
   switch opc
     when 'QLF'
-      # just pass through the rhs for now
-      # applications can define their own semantics e.g. by defining a context transform
-      transformChild(cx) operands[1]
+      qualifiedCx = applyQualifier operands[0], cx
+      transformChild(qualifiedCx) operands[1]
     when 'TERM'
       multi_match:
         query: operands.join ' '
@@ -141,17 +140,30 @@ module.exports = class AstTransformer extends ConfigNode
     
 
     customize = @_options.customize
-    transformContext =@_options.transformContext
+    fieldQualifiers = @_options.fieldQualifiers ? {}
+    fieldName = (s)->
+      if '^' in s then s.substr 0, s.indexOf '^' else s
+    applyQualifier = (qualifier, cx0)->
+      {fieldBoosts} = cx0
+      predicate = fieldQualifiers[qualifier]
+      fieldBoosts = switch
+        when not predicate?
+          []
+        when typeof predicate is "function"
+          fieldBoosts.filter predicate
+        when typeof predicate is "string"
+          fieldBoosts.filter (s)->fieldName(s) is predicate
+        when Array.isArray(predicate) and predicate.every((p)->typeof p is "string")
+          fieldBoosts.filter (s)->fieldName(s) in predicate
+        else
+          throw new Error "not a valid field qualifier: #{qualifier}"
+      merge cx0, {fieldBoosts}
 
-    customizedTransform = (ast, cx0)->
+      
+
+    customizedTransform = (ast, cx)->
       [operation, operands...] = ast
       customization = customize?[operation] ? {}
-      transformCx = transformContext?[operation] ? ()->{}
-      cx = (if transformCx.length > 1
-        transformCx operands, cx
-      else
-        merge cx0, transformCx operands
-      )
       part0 =builtInTransform ast, cx
       
 
@@ -161,7 +173,7 @@ module.exports = class AstTransformer extends ConfigNode
         merge part0, customization
 
     transformChild =(cx)->(child)->customizedTransform child, cx
-    cx0 ={queryFields,attributes, fieldBoosts, fieldNames, defaultOperator, transformChild}
+    cx0 ={queryFields,attributes, fieldBoosts, fieldNames, defaultOperator, transformChild, applyQualifier}
 
     body = (if ast?.length > 0 then customizedTransform(ast, cx0) else {})
     @postProcess body, cx0
