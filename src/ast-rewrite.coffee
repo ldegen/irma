@@ -1,7 +1,7 @@
-{isTerm, VAR, VARS} = require "./ast-helper.coffee"
+{isTerm, VAR, VARS} = require "./ast-helper"
 sigmatch = require "sigmatch"
-{match} = require "./ast-matcher.coffee"
-merge = require "./shallow-merge.coffee"
+{match} = require "./ast-matcher"
+merge = require "./shallow-merge"
 replace = (ast, [i,tail...], replacement)->
   if not i?
     replacement ast

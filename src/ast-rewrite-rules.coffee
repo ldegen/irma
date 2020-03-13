@@ -1,5 +1,5 @@
 
-{match} = require "./ast-matcher.coffee"
+{match} = require "./ast-matcher"
 {
   isTerm
   TERM
@@ -15,10 +15,10 @@
   SQUOT
   VARS
   VAR
-} = require "../src/ast-helper.coffee"
+} = require "../src/ast-helper"
 
-unparse = require "./ast-unparse.coffee"
-{bottomup,ruleBased, matchAll, matchSome} = require "./ast-rewrite.coffee"
+unparse = require "./ast-unparse"
+{bottomup,ruleBased, matchAll, matchSome} = require "./ast-rewrite"
 
 star = (tf)->(ast)->
   transformedAst = ast

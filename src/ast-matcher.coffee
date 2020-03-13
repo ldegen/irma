@@ -1,6 +1,6 @@
 
-merge = require "../src/shallow-merge.coffee"
-{VAR,VARS, isTerm} = require "../src/ast-helper.coffee"
+merge = require "../src/shallow-merge"
+{VAR,VARS, isTerm} = require "../src/ast-helper"
 
 collapseVarargs = (subst, name)->
   unless name? and subst?

@@ -1,7 +1,7 @@
 {parse} = require "./query-parser"
-unparse = require "./ast-unparse.coffee"
-{rewrite} = require "./ast-rewrite-rules.coffee"
-pretty = require "./ast-pretty.coffee"
+unparse = require "./ast-unparse"
+{rewrite} = require "./ast-rewrite-rules"
+pretty = require "./ast-pretty"
 
 rewriteInput = (input)->
   {value} = rewrite parse input

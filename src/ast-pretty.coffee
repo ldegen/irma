@@ -12,7 +12,7 @@
   NOT
   DQUOT
   SQUOT
-} = require "../src/ast-helper.coffee"
+} = require "../src/ast-helper"
 
 escapeDQ = (s)->
   s
