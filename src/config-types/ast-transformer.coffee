@@ -14,17 +14,22 @@ empty = (thing)->
   if typeof thing is "object" and Object.keys(thing).length is 0
     return true
   
-joinConsecutiveTerms = (done, next)->
-  [nextOp, nextArgs...] = next
-  [prefix..., prev] = done
-  [prevOp, prevArgs...] = (prev ? [])
+joinConsecutiveTerms = (occ)->
+  # note that we use operator: or for occ==NOT. This works because De Morgan:
+  # NOT (A or B or C ...) is equivalent to NOT A and NOT B and NOT C
+  operator = if occ is "MUST" then "and" else "or"
+  (done, next)->
+    [nextOp, nextArgs...] = next
+    [prefix..., prev] = done
+    [prevOp, prevArgs...] = (prev ? [])
 
-  
-  if prevOp is 'TERM' and nextOp is 'TERM'
-    [prefix..., [prevOp, prevArgs..., nextArgs...]]
-  else
-    [done..., next]
-
+    switch
+      when prevOp is 'TERM' and nextOp is 'TERM'
+        [prefix..., ['TERMS',operator, prevArgs..., nextArgs...]]
+      when prevOp is 'TERMS' and nextOp is 'TERM'
+        [prefix..., ['TERMS', prevArgs..., nextArgs...]]
+      else
+        [done..., next]
 
 groupBy = (crit)->
   reducer = (groups={}, elm)->
@@ -38,7 +43,8 @@ builtInTransform = (ast, cx)->
   {fieldBoosts, defaultOperator, transformChild} = cx
   switch opc
     when 'QLF'
-      #TODO just pass through the rhs for now
+      # just pass through the rhs for now
+      # applications can define their own semantics e.g. by defining a context transform
       transformChild(cx) operands[1]
     when 'TERM'
       multi_match:
@@ -46,6 +52,13 @@ builtInTransform = (ast, cx)->
         type: 'cross_fields'
         fields: fieldBoosts
         operator: defaultOperator
+    when 'TERMS' # pseudo node, created for consecutive non-negative terms
+      [operator, actualTerms...] = operands
+      multi_match:
+        query: actualTerms.join ' '
+        type: 'cross_fields'
+        fields: fieldBoosts
+        operator: operator
     when "DQUOT"
       multi_match:
         query: operands.join ' '
@@ -56,36 +69,46 @@ builtInTransform = (ast, cx)->
         query: operands.join ' '
         type: 'phrase'
         fields: fieldBoosts
-    when "OR"
+    when "OR", "SHOULD"
       bool:
         should: operands.map transformChild cx
-    when "AND"
+    when "AND","MUST"
       bool:
         must: operands.map transformChild cx
-    when "NOT"
+    when "NOT", "MUST_NOT"
       bool:
         must_not: operands.map transformChild cx
     when "SEQ"
       # the children are guaranteed to be occurence annotations
       # Group children by occurence
       groups =  operands.reduce (groupBy (t)->t[0]), {}
-      # create a boolean query
-      boolBody = {}
-      totalClauses = 0
-      for occ,elms of groups
-        clauses = elms
-          .map (t)->t[1]
-          .reduce joinConsecutiveTerms, []
-          .map transformChild(cx)
-        boolBody[occ.toLowerCase()] = clauses
-        totalClauses += clauses.length
-        
-      # if there is only one clause, and if it
-      # is not negative, we don't need the bool query at all.
-      if totalClauses is 1 and occ isnt "MUST_NOT"
-        clauses[0]
+
+      # join consecutive terms within groups and
+      # collect the resulting clauses into pseudo-terms.
+      pseudoTerms = Object.keys(groups)
+        .map (occ)->
+          operands = groups[occ]
+            .map (t)->t[1]
+            .reduce joinConsecutiveTerms(occ), []
+          [occ, operands...]
+
+      # count the resulting clauses
+      totalClauses = pseudoTerms.reduce(
+        (sum, pseudoTerm)->sum + pseudoTerm.length - 1 # (don't count the head!)
+        0
+      )
+
+      # special case:
+      # if there is only one non-negative clause, we can take a short-cut.
+      # In this case, we do not need the boolean query at all.
+      if totalClauses is 1 and pseudoTerms[0][0] isnt "MUST_NOT"
+        transformChild(cx)(pseudoTerms[0][1])
       else
-        bool: boolBody
+        # otherwise we recurse on the pseudo terms and merge the results
+        pseudoTerms
+          .map transformChild cx
+          .reduce ((body, transformedClause)->merge body, transformedClause), {}
+
     else
       match_all:{}
 
@@ -105,7 +128,10 @@ module.exports = class AstTransformer extends ConfigNode
     queryFields = @queryFields attributes
     if empty(queryFields)
       return {}
-    fieldBoosts = if isArray(queryFields) then queryFields else ("#{fieldName}^#{boost}" for fieldName, boost of queryFields)
+    fieldBoosts = if isArray(queryFields)
+      queryFields
+    else
+      ("#{fieldName}^#{boost}" for fieldName, boost of queryFields)
     fieldNames = if isArray(queryFields) then queryFields else Object.keys queryFields
 
     defaultOperator = query?.qop ? @_options?.defaultOperator ? "and"
@@ -114,20 +140,28 @@ module.exports = class AstTransformer extends ConfigNode
     {value:ast} = rewrite ast0
     
 
-
     customize = @_options.customize
-    customizedTransform = (ast, cx)->
-      [operation, operands...] = ast
-      part0 =builtInTransform ast, cx
+    transformContext =@_options.transformContext
 
+    customizedTransform = (ast, cx0)->
+      [operation, operands...] = ast
       customization = customize?[operation] ? {}
+      transformCx = transformContext?[operation] ? ()->{}
+      cx = (if transformCx.length > 1
+        transformCx operands, cx
+      else
+        merge cx0, transformCx operands
+      )
+      part0 =builtInTransform ast, cx
+      
+
       if typeof customization is "function"
-        customization operands, customizedTransform, part0
+        customization operands, cx, part0
       else if typeof customization is "object"
         merge part0, customization
 
     transformChild =(cx)->(child)->customizedTransform child, cx
-    cx0 ={queryFields,attributes,fieldNames, fieldBoosts, defaultOperator, transformChild}
+    cx0 ={queryFields,attributes, fieldBoosts, fieldNames, defaultOperator, transformChild}
 
     body = (if ast?.length > 0 then customizedTransform(ast, cx0) else {})
     @postProcess body, cx0

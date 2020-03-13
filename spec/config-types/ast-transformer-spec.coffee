@@ -125,6 +125,14 @@ describe "The default AST Transformer", ->
             operator: 'or'
         ]
 
+  it "understands AND nodes, even if the default operator is 'or'", ->
+    expect(transformer.transform([SEQ,[MUST,a],[MUST,b]], null, qop:'or')).to.eql
+      multi_match:
+        query: 'a b'
+        type: 'cross_fields'
+        fields: ['field_a','field_b', 'field_c']
+        operator: 'and'
+        
   it "understands NOT nodes", ->
     expect(transformer.transform([NOT, [SEQ,a,b,c] ])).to.eql
       bool:
@@ -205,11 +213,16 @@ describe "The default AST Transformer", ->
           fields: ['field_a','field_b', 'field_c']
 
   describe "customization", ->
-    # FIXME: There is a caveat:
-    #  - the simplification/normalization swallos away all Boolean nodes.
-    #  - occurence annotations are handled inline by the SEQ-nodes
+    #FIXME: There is a caveat when using these customizations:
     #
-    # so overriding any of the abovementioned node types may not have the desired effect!
+    # Keep in mind that the AST will be noramlized *before*
+    # the customatization kicks in. So for instance customizing boolean nodes
+    # will have no effect because they are removed from the ast during normalization.
+    #
+    # Also, the current SEQ strategy will merge the results from
+    # its direct children (which are guaranteed to be MUST,MUST_NOT or SHOULD nodes)
+    # into a single boolean query.
+
     it "supports merging in static custom options for particular node types", ->
       transformer = new Transformer
         fields: ['oink']
@@ -227,17 +240,12 @@ describe "The default AST Transformer", ->
           fields: ['oink']
           analyzer: 'extra_raw'
 
-    # FIXME: There is a caveat:
-    #  - the simplification/normalization swallos away all Boolean nodes.
-    #  - occurence annotations are handled inline by the SEQ-nodes
-    #
-    # so overriding any of the abovementioned node types may not have the desired effect!
     it "allows to dynamically rewrite the output for a particular node type", ->
       transformer = new Transformer
         fields: ['oink']
         defaultOperator: 'or'
         customize:
-          SQUOT: (operands, recurse, orig)->
+          SQUOT: (operands, cx, orig)->
             overridden:
               orig: orig
               operands: operands
@@ -255,3 +263,23 @@ describe "The default AST Transformer", ->
           ]
 
 
+    it "allows to define arbitrary context-transformations for particular node types", ->
+      # this is very useful for field qualifiers.
+
+      transformer = new Transformer
+        fields: ['oink']
+        defaultOperator: 'or'
+        transformContext:
+          QLF: (operands)->
+            fieldBoosts: [operands[0]]
+
+      ast = [MUST_NOT, [QLF,"eek",[TERM, "overthink"]]]
+      expect(transformer.transform ast).to.eql
+        bool:
+          must_not: [
+            multi_match:
+              query: "overthink"
+              type: "cross_fields"
+              fields: ["eek"]
+              operator: "or"
+          ]
