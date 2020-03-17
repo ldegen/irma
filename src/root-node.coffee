@@ -54,7 +54,7 @@ initTree = (root)->
     for alias, depPath of dependencies
       deps.push [path.toString(), depPath.toString()]
  
-  sortedKeys = toposort deps
+  sortedKeys = toposort(deps).reverse()
 
   for key in sortedKeys
     {node, path, deps} = lookup[key] ? {}
