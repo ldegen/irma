@@ -60,13 +60,9 @@ module.exports.explain = ({query:{explain}={}}) ->
 
 module.exports.type = ({type},{defaultType})->type ? defaultType
 
-semantics = module.exports.semantics = (searchRequest, settings, semantics0)->
+semantics = (searchRequest, settings, semantics0)->
   type = settings?.types[searchRequest.type]
   searchSemantics = semantics0 ? settings?.types[searchRequest.type]?.searchSemantics ? settings.searchSemantics
-
-#module.exports.ast = (searchRequest, settings, semantics0) ->
-#  searchSemantics = semantics(searchRequest, settings, semantics0)
-#  if module.exports.explain(searchRequest) then searchSemantics.apply(searchRequest, settings).ast else null
 
 module.exports.fielddataFields = (searchRequest, settings, attributes, semantics0) ->
   searchSemantics = semantics(searchRequest, settings, semantics0)
@@ -74,7 +70,7 @@ module.exports.fielddataFields = (searchRequest, settings, attributes, semantics
 
 module.exports.query = (searchRequest, settings, attributes, semantics0) ->
   searchSemantics = semantics(searchRequest, settings, semantics0)
-  searchSemantics.apply(searchRequest, settings, attributes).query
+  searchSemantics.apply(searchRequest, settings, attributes)
 
 module.exports.size = ({query:{limit}={}}={}, {defaultLimit=20, hardLimit=250})->
   Math.min (limit ? defaultLimit ), hardLimit

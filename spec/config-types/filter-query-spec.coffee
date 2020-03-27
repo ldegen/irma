@@ -19,11 +19,17 @@ describe "The Filter Query", ->
       queryObj= foo:1, bar:42
 
       expect(fq.create(queryObj, type)).to.eql
-        query:bool:filter:[
+        bool:filter:[
           filterFoo:1
         ,
           filterBar:42
         ]
+
+    it "understands empty queries", ->
+      fq = new FilterQuery
+      queryObj= {q:"no filter"}
+
+      expect(fq.create(queryObj, type)).to.eql {}
 
   describe "new api", ->
 
@@ -38,6 +44,14 @@ describe "The Filter Query", ->
       ,
         filterBar:42
       ]
+
+    it "understands empty queries", ->
+      fq = new FilterQuery
+      reqObj=
+        query: q: "not a filter either"
+        type: 'my_type'
+
+      expect(fq.apply reqObj, settings).to.eql {match_all:{}}
 
     it "supports explicitly overriding the processed attributes", ->
 

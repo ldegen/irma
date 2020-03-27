@@ -44,10 +44,12 @@ module.exports = class MultiMatchQuery extends ConfigNode
     @create= (query, type, attributes)->
       body = createEsQuery query, type, attributes
       if Object.keys(body).length is 0 then {}
-      else query:bool:must:[body]
+      else bool:must:[body]
 
 
     @apply= ({query, type:typeName}, settings, attributes)->
       type = settings?.types?[typeName]
-      createEsQuery query, type, attributes
+      body = createEsQuery query, type, attributes
 
+      if Object.keys(body).length is 0 then {match_all:{}}
+      else body

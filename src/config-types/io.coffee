@@ -22,7 +22,7 @@ writeTo = (spec, opts, fallback)->
     else
       throw new Error "Don't know how to write to #{spec}"
   else fallback
-      
+
 module.exports = class Io extends ConfigNode
   init: ->
 

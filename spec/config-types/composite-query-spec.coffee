@@ -10,6 +10,7 @@ describe "The Composite Query", ->
 
   emptyObjQ = apply: (req, settings, attributes)->{}
   emptyArrQ = apply: (req, settings, attributes)->[]
+  matchAll = apply: (req, settings, attributes)->{match_all:{}}
   undefQ = apply: (req,settings,attributes)->undefined
   nullQ = apply: (req,settings,attributes)->null
 
@@ -50,8 +51,8 @@ describe "The Composite Query", ->
   it "skips empty clauses", ->
 
     cq = new CompositeQuery
-      should: [emptyArrQ,mockQuery("baz"), emptyObjQ, mockQuery("bang"), nullQ, undefQ]
-      filter: emptyObjQ
+      should: [emptyArrQ,mockQuery("baz"), emptyObjQ, mockQuery("bang"), nullQ, matchAll, undefQ]
+      filter: matchAll
       must: [nullQ, emptyObjQ]
 
     expect(cq.apply req, settings, attributes).to.eql
@@ -69,3 +70,11 @@ describe "The Composite Query", ->
         should: [{mock:"phrase"},{mock:"multi-match"}]
         filter: [{mock:"filter1"},{mock:"filter2"},{mock:"filter3"}]
         minimumShouldMatch: 1
+
+  it "creates a match_all query if all clauses are empty", ->
+
+    cq = new CompositeQuery
+      filter: matchAll
+      must: [nullQ, emptyObjQ]
+      minimumShouldMatch:42
+    expect(cq.apply req, settings, attributes).to.eql match_all:{}

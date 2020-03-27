@@ -25,7 +25,7 @@ describe "The Request Parser", ->
       myType: myType
       defaultType: myType
     defaultType: "defaultType"
-    searchSemantics: apply: (input)->query:input: input
+    searchSemantics: apply: (input)->input: input
     SortParser:(parserSettings)->(sortExpression)->
       sort: ->
         sortExpression: sortExpression

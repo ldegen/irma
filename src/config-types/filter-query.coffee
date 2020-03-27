@@ -19,10 +19,12 @@ module.exports = class FilterQuery extends ConfigNode
   create: (query, type, attributes0)->
     filters = createFilters query, type, attributes0
     if filters.length is 0 then {}
-    else query:bool:filter: filters
+    else bool:filter: filters
 
   # new api
   apply: ({query, type:typeName}, settings, attributes)->
     type = settings?.types?[typeName]
-    createFilters query, type, attributes
+    filters = createFilters query, type, attributes
+    if filters.length is 0 then {match_all:{}}
+    else filters
 

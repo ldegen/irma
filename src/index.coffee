@@ -8,6 +8,7 @@ module.exports =
   Simple: require "./config-types/simple"
   Attribute: require "./config-types/attribute"
   MultiMatchQuery: require "./config-types/multi-match-query"
+  CompositeQuery: require "./config-types/composite-query"
   FilterQuery: require "./config-types/filter-query"
   AstTransformer: require "./config-types/ast-transformer"
   SearchSemantics: require "./config-types/search-semantics"

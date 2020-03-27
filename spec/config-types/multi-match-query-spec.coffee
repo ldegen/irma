@@ -47,7 +47,7 @@ describe "The Multi-Match Query", ->
 
   describe "new calling convention", ->
     it "understands empty queries", ->
-      expect(query "").to.eql {}
+      expect(query "").to.eql {match_all:{}}
 
     it "understands explicit AND", ->
       expect(query "holz AND termiten").to.eql
@@ -72,7 +72,7 @@ describe "The Multi-Match Query", ->
 
     it "understands explicit AND", ->
       expect(legacyQuery "holz AND termiten").to.eql
-        query: bool: must: [
+        bool: must: [
           multi_match:
             query: "holz termiten"
             type: "cross_fields"
