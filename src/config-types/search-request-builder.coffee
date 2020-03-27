@@ -15,7 +15,7 @@ module.exports = class SearchRequestBuilder extends ConfigNode
       type: type(searchRequest, settings)
       size: size(searchRequest, settings)
       from: from(searchRequest, settings)
-      ast: ast(searchRequest, settings, semantics)
+      #ast: ast(searchRequest, settings, semantics)
       body:
         fielddata_fields: fielddataFields(searchRequest, settings,attributes,semantics)
         explain: explain(searchRequest, settings)
