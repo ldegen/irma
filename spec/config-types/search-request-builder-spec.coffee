@@ -3,7 +3,7 @@ describe "The Request Parser", ->
   ConfigNode = require "../../src/config-node"
   # Actually the name is a bit misleading.
   # What it does is: take the parameters from the url and create components for a
-  # ES query expression. Historically, most of this code was in the "ES-Helper", and it 
+  # ES query expression. Historically, most of this code was in the "ES-Helper", and it
   # *is* very ES-specific. If you take a look at the `search` method within es-helper, you will
   # find that it does almost nothing. Everything happens here and in the response parser.
   # This is a bit odd. We will need to watch this.
@@ -38,7 +38,7 @@ describe "The Request Parser", ->
     config = merge settings, overrides
     rp = new SearchRequestBuilder()
     rp.transform(searchRequest, config)()
-  
+
   it "uses the SearchSemantics to create an ES-Query from the request's query string", ->
     rp = RP()
     expect(rp(query: "foobar").body.query).to.eql input:query: "foobar"
@@ -85,7 +85,7 @@ describe "The Request Parser", ->
       lorem: suggestion: "oink"
       ipsum: suggestion: "oink"
 
-  it "interpretes the `sort`-parameter, taking into  
+  it "interpretes the `sort`-parameter, taking into
       account the sort criteria configured for the type", ->
     rp = RP types:myType:sort: some:"sorterSettings"
     expect(rp(type: "myType", query:sort:"trallalla").body.sort).to.eql
@@ -105,7 +105,7 @@ describe "The Request Parser", ->
       bar: "bar_aggregation"
 
   it "adds aggs-directives for sorters that require them", ->
-    rp = RP types:myType:sort: 
+    rp = RP types:myType:sort:
       aggregation: -> "some aggregation"
     expect(rp(type: "myType",query:sort:"blablabla").body.aggs).to.eql
       _offsets: "some aggregation"

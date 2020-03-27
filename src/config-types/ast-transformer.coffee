@@ -13,7 +13,7 @@ empty = (thing)->
     return true
   if typeof thing is "object" and Object.keys(thing).length is 0
     return true
-  
+
 joinConsecutiveTerms = (occ)->
   # note that we use operator: or for occ==NOT. This works because De Morgan:
   # NOT (A or B or C ...) is equivalent to NOT A and NOT B and NOT C
@@ -37,7 +37,7 @@ groupBy = (crit)->
     group = groups[c] ?= []
     group.push elm
     groups
-    
+
 builtInTransform = (ast, cx)->
   [opc, operands...] = ast
   {fieldBoosts, defaultOperator, transformChild, applyQualifier} = cx
@@ -137,7 +137,7 @@ module.exports = class AstTransformer extends ConfigNode
     defaultOccurence = if defaultOperator is "and" then "MUST" else "SHOULD"
     rewrite = Rewrite defaultOccurence
     {value:ast} = rewrite ast0
-    
+
 
     customize = @_options.customize
     fieldQualifiers = @_options.fieldQualifiers ? {}
@@ -159,13 +159,13 @@ module.exports = class AstTransformer extends ConfigNode
           throw new Error "not a valid field qualifier: #{qualifier}"
       merge cx0, {fieldBoosts}
 
-      
+
 
     customizedTransform = (ast, cx)->
       [operation, operands...] = ast
       customization = customize?[operation] ? {}
       part0 =builtInTransform ast, cx
-      
+
 
       if typeof customization is "function"
         customization operands, cx, part0

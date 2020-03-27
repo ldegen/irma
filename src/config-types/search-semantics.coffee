@@ -2,11 +2,11 @@
 # request query parameters.
 #
 # This module does not do much itself. Instead, it gathers a list of QueryBuilders from the
-# configuration, passes them the current type and query and lets them construct the parts of 
+# configuration, passes them the current type and query and lets them construct the parts of
 # the elasticsearch query.
 #
 # The results of all query builders are merged and returned.
-# 
+#
 ConfigNode = require "../config-node"
 MultiMatchQuery = require "./multi-match-query"
 FilterQuery = require "./filter-query"
@@ -14,7 +14,7 @@ Merger = require "../merger"
 {isArray} = require "util"
 call = require "../call"
 merge = Merger customMerge: (lhs,rhs,pass)->
-  if isArray(lhs) and isArray(rhs) 
+  if isArray(lhs) and isArray(rhs)
     lhs.concat rhs
   else pass
 module.exports = class SearchSemantics extends ConfigNode
@@ -23,7 +23,7 @@ module.exports = class SearchSemantics extends ConfigNode
       new MultiMatchQuery()
       new FilterQuery()
     ]
-     
+
     type = settings?.types[typeName]
     identity = (x)->x
     postprocess = @_options?.postprocess ? identity

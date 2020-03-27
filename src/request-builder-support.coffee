@@ -2,12 +2,12 @@
 # This module is meant to provide the basic building blocks
 # for a ES search request. The signature of each function should follow
 # the pattern (searchRequest, settings, attributes/sorter/suggestions)
-# 
+#
 # The first argument, `searchRequest` describes the actual request.
 # It should be an object which at least two properties:
-#   
+#
 #   - `query` is an object representing the url parameters of the original request
-#   
+#
 #   - `type` is a string, the name of a type described in the configuration.
 #
 # The second argument, `settings` contains the complete runtime configuration
@@ -38,7 +38,7 @@ module.exports.sort = ({query:{sort}={}, type}, settings, SortParser0)->
   parse = SortParser settings.types?[type]?.sort ? {}
   sorter = parse(sort)
   sorter.sort()
-  
+
 
 module.exports.aggregations = (searchRequest, settings, attributes0, SortParser0)->
   {type=settings.defaultType, query:{sort}={}}=searchRequest
@@ -78,6 +78,6 @@ module.exports.query = (searchRequest, settings, attributes, semantics0) ->
 
 module.exports.size = ({query:{limit}={}}={}, {defaultLimit=20, hardLimit=250})->
   Math.min (limit ? defaultLimit ), hardLimit
-  
+
 module.exports.from = ({query:{offset=0}={}}={})->
   offset
