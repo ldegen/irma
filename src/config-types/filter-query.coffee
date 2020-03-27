@@ -1,15 +1,28 @@
 
 ConfigNode = require "../config-node"
 {isArray} = require "util"
+
+createFilters = (query, type, attributes0)->
+  attrs = attributes0 ? type?.attributes ? []
+  filters = []
+
+  for attr in attrs  when attr.filter?
+    value = query[attr?.name]
+    if(value?)
+      filters.push attr.filter(value)
+
+  filters
+
 module.exports = class FilterQuery extends ConfigNode
+
+  # legacy api
   create: (query, type, attributes0)->
+    filters = createFilters query, type, attributes0
+    if filters.length is 0 then {}
+    else query:bool:filter: filters
 
-    attrs = attributes0 ? type?.attributes ? []
-    filters = []
+  # new api
+  apply: ({query, type:typeName}, settings, attributes)->
+    type = settings?.types?[typeName]
+    createFilters query, type, attributes
 
-    for attr in attrs  when attr.filter?
-      value = query[attr?.name]
-      if(value?)
-        filters.push attr.filter(value)
-
-    query:bool:filter: filters
