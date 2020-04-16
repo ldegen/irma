@@ -316,3 +316,61 @@ describe "The default AST Transformer", ->
               fields: ["bang^2", "barf"]
               operator: "or"
           ]
+
+  it "supports including subfields" ,->
+    Fulltext = ({boost,field})->
+      query:true
+      field:field
+      boost:boost
+      includeSubfields:true
+    transformer = new Transformer
+
+    attributes = [
+      Fulltext
+        field: "funk"
+        boost: 9
+      Fulltext
+        field: "stuff"
+    ]
+    expect(transformer.transform([TERM, "foo"], attributes)).to.eql
+      multi_match:
+        query: 'foo'
+        type: 'cross_fields'
+        fields: [
+          'funk^9'
+          'funk.*^9'
+          'stuff^1'
+          'stuff.*^1'
+        ]
+        operator: "and"
+
+  it "supports including subfields with specific boost values", ->
+    Fulltext = ({boost,field,includeSubfields})->
+      query:true
+      field:field
+      boost:boost
+      includeSubfields:includeSubfields
+    transformer = new Transformer
+
+    attributes = [
+      Fulltext
+        field: "funk"
+        boost: 9
+        includeSubfields:
+          the:1
+          dump:2
+      Fulltext
+        field: "stuff"
+    ]
+    expect(transformer.transform([TERM, "foo"], attributes)).to.eql
+      multi_match:
+        query: 'foo'
+        type: 'cross_fields'
+        fields: [
+          'funk^9'
+          'funk.the^9'
+          'funk.dump^18'
+          'stuff^1'
+        ]
+        operator: "and"
+

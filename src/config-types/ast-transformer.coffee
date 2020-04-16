@@ -119,8 +119,13 @@ module.exports = class AstTransformer extends ConfigNode
       return @_options.fields
 
     for attr in attrs when attr.query
-      fieldName = if attr.includeSubfields then attr.field+"*" else attr.field
-      queryFields[fieldName] = attr.boost ? 1
+      subfields = attr.includeSubfields
+      if subfields is true
+        subfields = {'*':1}
+      subfields ?= {}
+      queryFields[attr.field] = attr.boost ? 1
+      for subField, subFieldBoost of subfields
+        queryFields[attr.field+"."+subField] = subFieldBoost * (attr.boost ? 1)
     queryFields
 
   transform: (ast0, attributes, query)->
