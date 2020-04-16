@@ -6,6 +6,7 @@ module.exports = class Fulltext extends Attribute
     @query = options.query ? true
     @includeSubfields = options.includeSubfields ? false
 
+
     if not @query
       @filter=(paramString)->
         match_phrase_prefix:"#{options.field}":
@@ -15,4 +16,4 @@ module.exports = class Fulltext extends Attribute
 
   highlight: ->
     @_options.highlight ? {}
-  
+

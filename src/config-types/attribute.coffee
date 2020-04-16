@@ -21,7 +21,7 @@ module.exports=class Attribute extends ConfigNode
     # as a path of dot-separated attribute names and traversed recursively.
     @field = options.field
     @name = options.name ? options.field
-    
+
     # The `source` option defines how the field value is extracted from
     # the document source when displaying search result entries.
     # By default, it will look at the `field` option and extract

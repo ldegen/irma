@@ -132,7 +132,7 @@ describe "The default AST Transformer", ->
         type: 'cross_fields'
         fields: ['field_a','field_b', 'field_c']
         operator: 'and'
-        
+
   it "understands NOT nodes", ->
     expect(transformer.transform([NOT, [SEQ,a,b,c] ])).to.eql
       bool:
@@ -287,7 +287,7 @@ describe "The default AST Transformer", ->
           ]
 
     it "interpretes qualifiers as named predicates on searched fields", ->
-      
+
       transformer = new Transformer
         fields: ['oink', 'bang^2', 'barf']
         fieldQualifiers:
@@ -300,7 +300,7 @@ describe "The default AST Transformer", ->
       ast = [AND
         [QLF, "foo", [TERM, 'a']]
         [QLF, "ba", [TERM, 'b']]]
-          
+
       expect(transformer.transform ast).to.eql
         bool:
           must: [
