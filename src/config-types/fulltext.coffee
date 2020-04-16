@@ -17,3 +17,16 @@ module.exports = class Fulltext extends Attribute
   highlight: ->
     @_options.highlight ? {}
 
+  highlightSubfields: ->
+    switch
+      when @_options.highlightSubfields?
+        @_options.highlightSubfields
+      when @includeSubfields is true
+        "#{@field}.*":{}
+      when typeof @includeSubfields is "object"
+        obj = {}
+        for subField, _ of @includeSubfields
+          obj[subField] = {}
+        obj
+      else
+        {}

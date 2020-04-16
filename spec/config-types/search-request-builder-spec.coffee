@@ -19,6 +19,8 @@ describe "The Request Parser", ->
       name: "bar"
       field: "bar"
       highlight: -> "highlight me"
+      highlightSubfields: ->
+        "*": "me too!"
     ]
   settings =
     types:
@@ -71,6 +73,7 @@ describe "The Request Parser", ->
       fields:
         foo: "highlight me"
         bar: "highlight me"
+        'bar.*': "me too!"
 
   it "adds suggest-directives if there are any configured for the requested type", ->
     rp=RP types:myType:suggestions:[

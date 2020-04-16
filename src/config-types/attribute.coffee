@@ -38,5 +38,15 @@ module.exports=class Attribute extends ConfigNode
             when 'function' then augmentation(dst)
             when 'object' then extend dst, augmentation
             else throw new Error('duh?!')
+  findHighlightedMatches: (hit)->
+    candidateFields = [@field]
+    if @highlightSubfields?
+      for subfield in Object.keys @highlightSubfields()
+        candidateFields.push @field+"."+subfield
+
+    for candidateField in candidateFields
+      candidate = hit.highlight?[candidateField]
+      return candidate if candidate?
+
   renderResult: (hit)->
-    hit.highlight?[@field]?.join(" … ") ? prefix(@source(hit._source),@_options.teaserLength ? 150)
+    findHighlightedMatches(hit)?.join " … " ? prefix(@source(hit._source),@_options.teaserLength ? 150)

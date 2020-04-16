@@ -20,8 +20,13 @@
 module.exports.highlightFields = (searchRequest, settings, attributes0)->
   attributes = attributes0 ? settings?.types?[searchRequest.type]?.attributes ? []
   hlFields = {}
-  for attr in attributes when attr.highlight?
-    hlFields[attr.field] = attr.highlight()
+  for attr in attributes
+    if attr.highlight?
+      hlFields[attr.field] = attr.highlight()
+    if attr.highlightSubfields?
+      hlSubfields = attr.highlightSubfields()
+      for subfield, hlSettings of hlSubfields
+        hlFields[attr.field+"."+subfield] = hlSettings
   hlFields
 
 module.exports.suggest = (request, settings, suggestions0)->
