@@ -49,4 +49,4 @@ module.exports=class Attribute extends ConfigNode
       return candidate if candidate?
 
   renderResult: (hit)->
-    findHighlightedMatches(hit)?.join " … " ? prefix(@source(hit._source),@_options.teaserLength ? 150)
+    @findHighlightedMatches(hit)?.join(" … ") ? prefix(@source(hit._source),@_options.teaserLength ? 150)
