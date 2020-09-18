@@ -32,7 +32,7 @@ module.exports = (settings)->
       failure = (err)->
         console.error "error",err.stack||err
         console.error "error",err
-        res.status(err.status).send err
+        res.status(err.status ? err.statusCode ? 500).send err
       try
         Promise.resolve(f(req, res, next)).done success,failure
       catch err
