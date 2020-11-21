@@ -1,4 +1,3 @@
-{ ConfigNode } = require "@l.degener/irma-config"
 module.exports =
   DomainObject: require "./config-types/domainobject"
   FullText: require "./config-types/fulltext"
@@ -23,8 +22,9 @@ module.exports =
   Cli: require "./cli"
   Server: require "./server"
   defaults: require "./default-settings"
+  configTypes: require "./config-types"
   SortParser: require "./sort-parser"
-  ConfigNode: ConfigNode
+  ConfigNode: require "./config-node"
   ResponseParserSupport: require "./response-parser-support"
   RequestBuilderSupport: require "./request-builder-support"
   DefaultView: require "./config-types/default-view"
