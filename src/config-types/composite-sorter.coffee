@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ConfigNode} = require "@l.degener/irma-config"
 flip = (sorter)->
   d = sorter.direction()
   sorter.direction switch d
@@ -13,8 +13,8 @@ module.exports = class CompositeSorter extends ConfigNode
     super options
     @_sorters = sorters
     @_direction = direction
-  
-  direction: (string)-> 
+
+  direction: (string)->
     if string? then new CompositeSorter sorters:@_sorters, direction:string else @_direction
 
   sort: ()->

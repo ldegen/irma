@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 {augmentHit} = require "../response-parser-support"
 merge = require "../shallow-merge"
 module.exports = class DefaultView extends ConfigNode

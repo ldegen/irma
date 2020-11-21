@@ -1,11 +1,11 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 module.exports = class CsvView extends ConfigNode
 
   render: ({types={}},{type}) -> ({hits})=>
-    
+
     attributes = types?[type]?.attributes
     headers = attributes.map ({name})->name
-    
+
     headers:
       "Content-Disposition": "attachment; filename=\"export.csv\""
     mimeType: "text/csv"

@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 call = require "../call"
 module.exports = class Switch extends ConfigNode
   transform: (request, settings)->

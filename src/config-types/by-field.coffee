@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 module.exports = class ByField extends ConfigNode
 
 
@@ -31,9 +31,9 @@ module.exports = class ByField extends ConfigNode
 
 
 
-        
 
-  direction: (string)-> 
+
+  direction: (string)->
     if string? then new ByField @_options, string else @directionString
   sort: ()->
     direction = @directionString

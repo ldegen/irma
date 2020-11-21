@@ -1,5 +1,5 @@
 
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 {isArray} = require "util"
 
 createFilters = (query, type, attributes0)->

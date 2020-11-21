@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 module.exports=class Suggest extends ConfigNode
   init: ()->
     @field ?= @_options.field

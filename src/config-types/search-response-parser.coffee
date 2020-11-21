@@ -1,5 +1,5 @@
 sup = require "../response-parser-support"
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 
 mapObj = (obj,f)->
   r={}
@@ -12,10 +12,10 @@ module.exports = class SearchResponseParser extends ConfigNode
       facetCounts, sections, suggestions,
       hits, _request, _ast, offset, total
     } = mapObj sup, (f)->f(searchRequest, settings)
-  
+
     (response)->
-      
-      hits: hits(response) 
+
+      hits: hits(response)
       _request: _request(response)
       _ast: _ast(response)
       offset: offset(response)

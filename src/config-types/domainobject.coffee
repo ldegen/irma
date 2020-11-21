@@ -1,5 +1,5 @@
 extend = require "deep-extend"
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 module.exports=class DomainObject extends ConfigNode
 
   augmentHit: (src,dst)->

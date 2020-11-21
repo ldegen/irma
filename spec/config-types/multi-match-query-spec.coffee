@@ -1,5 +1,5 @@
 MultiMatchQuery = require "../../src/config-types/multi-match-query.coffee"
-RootNode = require "../../src/root-node.coffee"
+{RootNode} = require "@l.degener/irma-config"
 Io = require "../../src/config-types/io.coffee"
 describe "The Multi-Match Query", ->
 

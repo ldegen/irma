@@ -1,8 +1,9 @@
 describe "The Command Line Interface", ->
   Io = require "../src/config-types/io"
-  LoadYaml = require "../src/load-yaml"
+  yaml = require "js-yaml"
   cli = require "../src/cli"
-  {unit} = require "../src/config-builder"
+  {ConfigBuilder} = require "@l.degener/irma-config"
+  {unit} = ConfigBuilder
   io = undefined
   defaults =
     by:"default"
@@ -11,7 +12,7 @@ describe "The Command Line Interface", ->
   mkdir = Promise.promisify require "mkdirp"
   rmdir = Promise.promisify require "rimraf"
   fs = require "fs"
-  readme = LoadYaml() path.resolve __dirname, "../README.yaml"
+  readme = yaml.load fs.readFileSync path.resolve __dirname, "../README.yaml"
   Automist = require "automist"
   mocks = undefined
   trace = undefined
@@ -52,7 +53,7 @@ describe "The Command Line Interface", ->
     typeDir2 = path.join tmpDir, "types2"
     configFile1 = path.join tmpDir, "config1.yaml"
     configFile2 = path.join tmpDir, "config2.yaml"
-    
+
     Promise.all [typeDir1, typeDir2].map (d)-> mkdir d
       .then ->
         foo1 = createModule typeDir1, "foo"

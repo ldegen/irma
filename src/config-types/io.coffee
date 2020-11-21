@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 {Console} = require "console"
 {Readable, Writable} = require "stream"
 {createReadStream, createWriteStream} = require "fs"
