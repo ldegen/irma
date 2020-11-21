@@ -7,10 +7,9 @@
 #
 # The results of all query builders are merged and returned.
 #
-ConfigNode = require "../config-node"
+{ ConfigNode, Merger} = require "@l.degener/irma-config"
 MultiMatchQuery = require "./multi-match-query"
 FilterQuery = require "./filter-query"
-Merger = require "../merger"
 {isArray} = require "util"
 call = require "../call"
 merge = Merger customMerge: (lhs,rhs,pass)->

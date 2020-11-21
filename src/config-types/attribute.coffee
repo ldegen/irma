@@ -1,6 +1,6 @@
 
 extend = require "deep-extend"
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 module.exports=class Attribute extends ConfigNode
   prefix = (input,len)->
     if(!input?)

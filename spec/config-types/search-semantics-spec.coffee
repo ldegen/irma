@@ -1,6 +1,6 @@
 describe "The Search Semantic", ->
   SearchSemantics = require "../../src/config-types/search-semantics"
-  ConfigNode = require "../../src/config-node"
+  { ConfigNode } = require "@l.degener/irma-config"
   Io = require "../../src/config-types/io.coffee"
   trace = undefined
   io = undefined

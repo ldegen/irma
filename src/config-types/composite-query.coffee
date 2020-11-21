@@ -1,5 +1,5 @@
 
-ConfigNode = require "../config-node"
+{ConfigNode} = require "@l.degener/irma-config"
 
 flatmap = (arr, f)->
   reducer = (out, elm, i, arr)->out.concat f(elm,i,arr)

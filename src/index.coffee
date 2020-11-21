@@ -22,6 +22,7 @@ module.exports =
   Cli: require "./cli"
   Server: require "./server"
   defaults: require "./default-settings"
+  configTypes: require "./config-types"
   SortParser: require "./sort-parser"
   ConfigNode: require "./config-node"
   ResponseParserSupport: require "./response-parser-support"

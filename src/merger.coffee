@@ -1,57 +1,17 @@
-{isArray} = require "util"
-pass = {}
-module.exports = ({customMerge}={})->
-  shallowCopy = (thing)->
-    switch 
-      when isArray thing then [thing...]
-      when thing instanceof Object
-        o = {}
-        for key,value of thing
-          o[key]=value 
-        o
-      else thing
+console.error """
+DEPRECATION WARNING:
+  Somewhere in your code base, you require somehting like "irma/lib/merger.js".
+  Please don't do that!
+  For now, to make this warning go away you can do something like
 
-  initialize = (last)->
-    switch
-      when isArray last then []
-      when last instanceof Object then {}
-      else last
+    {Merger} = require "irma"
 
-  merge = (lhs, rhs, output0, inplace=false)->
-    if customMerge
-      decission = customMerge(lhs,rhs,pass)
-      if decission is pass
-        merge0 lhs, rhs, output0, inplace
-      else
-        decission
-    else
-      merge0 lhs, rhs, output0, inplace
+  or maybe
 
-  merge0 = (lhs, rhs, output0, inplace=false)->
-    switch
-      when not lhs? then rhs
-      when rhs is null then rhs
-      when not rhs? then lhs
-      when not (rhs instanceof Object) then rhs
-      when not (lhs instanceof Object) then rhs
-      when lhs.constructor isnt Object or rhs.constructor isnt Object then rhs
-      when isArray(rhs) or isArray(lhs) then rhs
-      else
-        output = if inplace or (output0 isnt lhs) then output0 else shallowCopy output0
-        for key,value of rhs
-          output[key] = merge output[key], value, output[key], inplace
-        output
+    {Merger} = require "@l.degener/irma-config"
 
+  I haven't yet decided how to finally resolve this, but please note that
+  this was originally not intended as public API of neither irma nor irma-config!!
+"""
 
-
-
-  reducer = ({data:lhs, inplace}, rhs)->
-    output = merge lhs, rhs, lhs, inplace
-    data:output
-    inplace: inplace or (output isnt lhs) and (output isnt rhs)
-    
-
-
-  (args...)->
-    {data} = args.reduce reducer, inplace:false
-    data
+module.exports =require("@l.degener/irma-config").Merger

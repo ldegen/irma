@@ -2,9 +2,10 @@ fs = require "fs"
 path = require "path"
 merge = require "deepmerge"
 minimist = require "minimist"
-LoadYaml = require "./load-yaml"
+yaml = require 'js-yaml'
 Automist = require "automist"
-{unit, add, load, wrap} = ConfigBuilder = require "./config-builder"
+{ConfigBuilder} = require "@l.degener/irma-config"
+{unit, add, load, wrap} = ConfigBuilder
 {isArray} = require "util"
 
 require "coffeescript/register"
@@ -18,7 +19,7 @@ module.exports = (args...)->
       o[toCamelCase key]=value for key,value of x
       o
 
-  readme = LoadYaml() path.resolve __dirname, "../README.yaml"
+  readme = yaml.load fs.readFileSync path.resolve __dirname, "../README.yaml"
   automist = Automist readme
   argv = toCamelCase minimist args, automist.options()
 
@@ -31,7 +32,7 @@ module.exports = (args...)->
           ( probably in some wrapper code that uses the ConfigBuilder to programatically
             create/run an irma configuration ).
 
-          Support for this method has been removed, so THIS WILL NOT WORK. 
+          Support for this method has been removed, so THIS WILL NOT WORK.
 
           Instead, Io can now be configured / overridden using the regular
           configuration subsystem. For example, you could put something like this in your
@@ -41,7 +42,7 @@ module.exports = (args...)->
               stderr: path/to/err.log
 
           If you create your configuration programmatically, you can also create a writeable
-          yourself and pass it as io.std[err|out]. 
+          yourself and pass it as io.std[err|out].
 
           We appologize for the inconvenience!
           """
@@ -82,29 +83,11 @@ module.exports = (args...)->
         {host, port, io} = settings
         io.stderr.write "IRMa listening at http://#{host}:#{port}\n"
         settings
-  installService = (cfg)->
-    unit cfg
-      .then (_, settings)->
-        path = require "path"
-        cleanSettings = {}
-        cleanSettings[key] = value for key,value of settings when not key.startsWith '__'
-        io.stderr.write LoadYaml(settings.__types).unparse cleanSettings
-        s = settings.__typePath?.join path.delimiter
-        io.stderr.write s if s?
-        io.stderr.write "\n"
-        settings
 
   if argv.help
     printHelp
   else if argv.manpage
     generateManpage
-  else if argv.install then (cfg)->
-    unit cfg
-      .bind checkLegacyIo
-      .bind addDirsToTypePath
-      .bind loadConfigFilesFromCommandLine
-      .bind processCommandLineOverrides
-      .bind installService
   else (cfg) ->
     unit cfg
       .bind checkLegacyIo

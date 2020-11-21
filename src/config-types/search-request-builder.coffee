@@ -5,7 +5,7 @@
   fielddataFields, explain, query
 } = require "../request-builder-support"
 
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 
 module.exports = class SearchRequestBuilder extends ConfigNode
   transform: (searchRequest, settings)->

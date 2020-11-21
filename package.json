@@ -41,6 +41,7 @@
     "rosie": "^0.4.1"
   },
   "dependencies": {
+    "@l.degener/irma-config": "^1.2.0",
     "JSONStream": "^1.0.4",
     "automist": "^0.2.0",
     "bluebird": "^3.4.6",
@@ -55,7 +56,6 @@
     "errorhandler": "^1.3.0",
     "express": "^4.10.6",
     "express-http-proxy": "^0.11.0",
-    "function-arguments": "^1.0.8",
     "immutable": "^3.8.1",
     "js-yaml": "^3.13.1",
     "minimist": "^1.2.5",
@@ -63,11 +63,10 @@
     "pegjs": "^0.9.0",
     "promise-ops": "^0.5.0",
     "request": "^2.51.0",
-    "sigmatch": "^0.9.0",
-    "toposort": "^2.0.2",
     "yargs": "^1.3.3"
   },
   "bundleDependencies": [
+    "@l.degener/irma-config",
     "JSONStream",
     "automist",
     "bluebird",
@@ -82,7 +81,6 @@
     "errorhandler",
     "express",
     "express-http-proxy",
-    "function-arguments",
     "immutable",
     "js-yaml",
     "minimist",
@@ -90,8 +88,6 @@
     "pegjs",
     "promise-ops",
     "request",
-    "sigmatch",
-    "toposort",
     "yargs"
   ]
 }

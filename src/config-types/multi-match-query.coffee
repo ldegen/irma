@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 defaultParser = require "../query-parser"
 Transformer = require "./ast-transformer"
 {isArray} = require "util"

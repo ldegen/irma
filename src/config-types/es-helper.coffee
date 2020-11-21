@@ -1,4 +1,4 @@
-ConfigNode = require "../config-node"
+{ ConfigNode } = require "@l.degener/irma-config"
 ElasticSearch = require "elasticsearch"
 Yaml = require "js-yaml"
 fs = require "fs"
@@ -33,9 +33,9 @@ module.exports = class EsAdapter extends ConfigNode
         type:typeName
         id:id
       client.get body
-    
+
     legacyFetch = (id, typeName) -> @get(null, {types})({id, typeName})
-    
+
     Object.defineProperty this, "fetch",
       writeable: true
       configurable: true
