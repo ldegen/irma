@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "irma",
-  "version": "0.35.3",
+  "version": "0.36.0",
   "description": "A middleware specialized for building IR frontends",
   "main": "lib/index.js",
   "bin": {
