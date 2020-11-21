@@ -9,7 +9,6 @@ module.exports = (settings)->
   cheerio = require "cheerio"
   call = require "./call"
 
-  parseQuery = require("./query-parser").parse
   es = settings.elasticSearch
   {stdout,stderr, console} = settings.io
 

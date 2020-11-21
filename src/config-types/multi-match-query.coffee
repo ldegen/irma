@@ -1,5 +1,6 @@
 { ConfigNode } = require "@l.degener/irma-config"
-defaultParser = require "../query-parser"
+{parse} = require "@l.degener/irma-query-syntax"
+defaultParser = {parse}
 Transformer = require "./ast-transformer"
 {isArray} = require "util"
 module.exports = class MultiMatchQuery extends ConfigNode

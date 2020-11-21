@@ -13,7 +13,7 @@
   SQUOT
   VARS
   VAR
-} = require "../../src/ast-helper.coffee"
+} = require "@l.degener/irma-query-syntax"
 
 
 describe "The default AST Transformer", ->
