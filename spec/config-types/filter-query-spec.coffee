@@ -25,6 +25,19 @@ describe "The Filter Query", ->
           filterBar:42
         ]
 
+    it "understands multi-valued parameters", ->
+      fq = new FilterQuery
+      queryObj= foo:[2,3], bar:42
+
+      expect(fq.create(queryObj, type)).to.eql
+        bool:filter:[
+          filterFoo:2
+        ,
+          filterFoo:3
+        ,
+          filterBar:42
+        ]
+
     it "understands empty queries", ->
       fq = new FilterQuery
       queryObj= {q:"no filter"}
@@ -41,6 +54,20 @@ describe "The Filter Query", ->
 
       expect(fq.apply reqObj, settings).to.eql [
         filterFoo:1
+      ,
+        filterBar:42
+      ]
+
+    it "understands multi-valued parameters", ->
+      fq = new FilterQuery
+      reqObj=
+        query: foo:[2,3], bar:42
+        type: 'my_type'
+
+      expect(fq.apply reqObj, settings).to.eql [
+        filterFoo:2
+      ,
+        filterFoo:3
       ,
         filterBar:42
       ]

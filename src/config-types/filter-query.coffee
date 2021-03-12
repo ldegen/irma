@@ -8,8 +8,13 @@ createFilters = (query, type, attributes0)->
 
   for attr in attrs  when attr.filter?
     value = query[attr?.name]
-    if(value?)
-      filters.push attr.filter(value)
+    continue unless value?
+
+    if not isArray value
+      value = [value]
+
+    for elm in value
+      filters.push attr.filter(elm)
 
   filters
 

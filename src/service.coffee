@@ -104,6 +104,7 @@ module.exports = (settings)->
   service.get '/:type/search', (req, res)->
     viewName = req.query.view
     typeName = req.params.type
+    console.log "req.query", req.query
     searchRequest =
       query: req.query
       type: typeName
